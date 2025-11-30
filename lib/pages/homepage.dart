@@ -1,16 +1,26 @@
+// Store data and display it broken down by day of the week
+
 import 'package:flutter/material.dart';
 import 'expense_model.dart';
+import 'dart:core';
 
 class HomePage extends StatefulWidget {
+  // Global key to access state of Home Page from outside
+  static final GlobalKey<_HomePageState> homePageStateKey = GlobalKey<_HomePageState>();
+  
   const HomePage({super.key});
 
+  // Permanent storage for every expense (static to make it accessible from anywhere in the app)
   static final List<Expense> expenses = [];
+
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
+// Set up a stateful widget with mixing for animation control
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+  // Manage tabs on top of screen (the days of the week)
   late TabController _tabController;
 
 List<DateTime> getCurrentWeekDates() {
@@ -20,21 +30,29 @@ List<DateTime> getCurrentWeekDates() {
   }
 
 late List<DateTime> weekDates; 
-
   @override
   void initState(){
     super.initState();
+    // Calculate dates for the current week
     weekDates = getCurrentWeekDates(); 
-    _tabController = TabController(length: weekDates.length, vsync: this); 
+    _tabController = TabController(length: weekDates.length, vsync: this, initialIndex: DateTime.now().weekday - 1); 
   }
 
   @override
+  // Clean up page
   void dispose() {
+    // Tell the controller to free up system sources (manages the Mon-Sun tabs)
     _tabController.dispose();
     super.dispose(); 
   }
 
+  DateTime getSelectedDate() {
+    // Get actual date time object for the day 
+    return weekDates[_tabController.index];
+  }
+
   void _deleteExpense(int index) {
+    // Notify flutter with the data change and trigger build method to run again
     setState(() {
       HomePage.expenses.removeAt(index);
     });
@@ -42,7 +60,9 @@ late List<DateTime> weekDates;
 
   void _editExpense(int index, String name, double amount, String category,
       DateTime date, String details) {
+    // Update UI after change
     setState(() {
+      // Instead of removing, we update the existing data
       HomePage.expenses[index] = Expense(
         name: name,
         amount: amount,
@@ -53,22 +73,29 @@ late List<DateTime> weekDates;
     });
   }
 
+  // Edit popup
   void _openEditExpenseDialog(int index) {
+    // Retrieve current expense object
     Expense e = HomePage.expenses[index];
+    // Extract values from the object
     String name = e.name;
     String amount = e.amount.toString();
     String category = e.category;
     String details = e.details;
     DateTime selectedDate = e.date;
 
+    // Display popup window
     showDialog(
       context: context,
       builder: (context) {
+        // Self contained state since AlertDialog doesnt redraw after change
+        //  Redraw the dialog only
         return StatefulBuilder(builder: (context, setStateDialog) {
           return AlertDialog(
             title: const Text('Edit Expense'),
             content: SingleChildScrollView(
               child: Column(
+                // Input boxes to change details
                 children: [
                   TextField(
                     decoration:
@@ -133,6 +160,7 @@ late List<DateTime> weekDates;
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Cancel'),
               ),
+              // Submission Point
               ElevatedButton(
                 onPressed: () {
                   if (name.isNotEmpty && double.tryParse(amount) != null) {
