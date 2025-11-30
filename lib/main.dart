@@ -6,6 +6,7 @@ import 'pages/summary.dart';
 import 'pages/customizations.dart';
 import 'pages/add_expense.dart'; 
 import 'pages/profile.dart';
+import 'pages/expense_model.dart'; // Ensure this import is here
 
 void main() {
   runApp(const MyApp());
@@ -33,51 +34,68 @@ class ExpenseHomePage extends StatefulWidget {
 class _ExpenseHomePageState extends State<ExpenseHomePage> {
   int _bottomNavIndex = 1;
 
+  // 1. THE MASTER LIST LIVES HERE NOW
+  final List<Expense> myExpenses = [];
+
   final iconList = <IconData>[
     Icons.bar_chart,
     Icons.home,
     Icons.settings,
-    Icons.person, // dummy
+    Icons.person,
   ];
 
   @override
   Widget build(BuildContext context) {
+    // 2. Pass the list and delete function DOWN to HomePage
     final pages = <Widget>[
       const SummaryPage(),
-      HomePage(),
+      HomePage(
+        expenses: myExpenses,
+        onDelete: (index) {
+          setState(() {
+            myExpenses.removeAt(index);
+          });
+        },
+      ),
       const CustomizationPage(),
-      const ProfilePage(), // dummy
+      const ProfilePage(), 
     ];
 
     return Scaffold(
+      // Light blue/grey background from wireframe
+      backgroundColor: const Color(0xFFF5F7FA), 
       body: pages[_bottomNavIndex],
+      
       floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(), // <--- Makes the button perfectly round
         onPressed: () async {
           final newExpense = await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const AddExpensePage()),
           );
 
-          if (newExpense != null) {
+          if (newExpense != null && newExpense is Expense) {
             setState(() {
-              HomePage.expenses.add(newExpense); // rebuild HomePage
-              _bottomNavIndex = 1; // switch to Home tab
+              myExpenses.add(newExpense); // Add to master list
+              _bottomNavIndex = 1; // Switch to Home tab
             });
           }
         },
-        child: const Icon(Icons.add),
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF5E6C85), // Wireframe blue color
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      
       bottomNavigationBar: AnimatedBottomNavigationBar(
         icons: iconList,
         activeIndex: _bottomNavIndex,
         gapLocation: GapLocation.center,
-        notchSmoothness: NotchSmoothness.verySmoothEdge,
+        notchSmoothness: NotchSmoothness.softEdge,
         leftCornerRadius: 32,
         rightCornerRadius: 32,
+        activeColor: const Color(0xFF5E6C85),
+        inactiveColor: Colors.grey,
         onTap: (index) {
-          // if (index == 3) return;
           setState(() => _bottomNavIndex = index);
         },
       ),
