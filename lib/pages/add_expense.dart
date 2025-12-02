@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
 import 'expense_model.dart';
 
+/* Stateful widget is needed because the text fields and selected
+    data/category will change before submitting the final expense
+*/
 class AddExpensePage extends StatefulWidget {
-  const AddExpensePage({super.key});
-
+  final DateTime initialDate;
+  const AddExpensePage({super.key, required this.initialDate});
+  
   @override
   State<AddExpensePage> createState() => _AddExpensePageState();
 }
 
 class _AddExpensePageState extends State<AddExpensePage> {
+  // Reference and validate form inputs
   final _formKey = GlobalKey<FormState>();
   String name = '';
   String amount = '';
   String category = 'transpo';
   String details = '';
-  DateTime selectedDate = DateTime.now();
+  late DateTime selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = DateTime(widget.initialDate.year, widget.initialDate.month, widget.initialDate.day);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +36,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
         child: Form(
           key: _formKey,
           child: Column(
+            // Input fields
             children: [
               TextFormField(
                 decoration:
@@ -81,6 +93,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 ],
               ),
               const SizedBox(height: 16),
+              // Add expense button action
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
