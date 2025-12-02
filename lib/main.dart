@@ -8,10 +8,16 @@ import 'pages/add_expense.dart';
 import 'pages/profile.dart';
 import 'pages/expense_model.dart'; // Ensure this import is here
 
+/*
+===============
+  ENTRY POINT
+===============
+*/ 
 void main() {
   runApp(const MyApp());
 }
 
+// Define the root widget, set the application theme, and entry screen (ExpenseHomePage)
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -24,6 +30,13 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/*
+===============
+  Main Screen
+===============
+*/ 
+
+// Stateful because it needs to track which tab is currently selected
 class ExpenseHomePage extends StatefulWidget {
   const ExpenseHomePage({super.key});
 
@@ -32,6 +45,7 @@ class ExpenseHomePage extends StatefulWidget {
 }
 
 class _ExpenseHomePageState extends State<ExpenseHomePage> {
+  // Track selected tab: 1 means Home Tab is selected first
   int _bottomNavIndex = 1;
 
   // 1. THE MASTER LIST LIVES HERE NOW
@@ -46,17 +60,10 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // 2. Pass the list and delete function DOWN to HomePage
+    // List of all the screens
     final pages = <Widget>[
       const SummaryPage(),
-      HomePage(
-        expenses: myExpenses,
-        onDelete: (index) {
-          setState(() {
-            myExpenses.removeAt(index);
-          });
-        },
-      ),
+      HomePage(key: HomePage.homePageStateKey),
       const CustomizationPage(),
       const ProfilePage(), 
     ];
@@ -65,20 +72,31 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
       // Light blue/grey background from wireframe
       backgroundColor: const Color(0xFFF5F7FA), 
       body: pages[_bottomNavIndex],
-      
+      // Code for the add button
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(), // <--- Makes the button perfectly round
         onPressed: () async {
-          final newExpense = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddExpensePage()),
-          );
+          // Check if we are in Home Page
+          if (_bottomNavIndex == 1) {
+            // Get the currently selected date from the HomePage State
+            final selectedDate = HomePage.homePageStateKey.currentState?.getSelectedDate() ?? DateTime.now();
+            
+            final newExpense = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => AddExpensePage(initialDate: selectedDate)),
+            );
 
-          if (newExpense != null && newExpense is Expense) {
-            setState(() {
-              myExpenses.add(newExpense); // Add to master list
-              _bottomNavIndex = 1; // Switch to Home tab
-            });
+            if (newExpense != null) {
+              setState(() {
+                HomePage.expenses.add(newExpense); // rebuild HomePage
+                _bottomNavIndex = 1; // switch to Home tab
+              });
+            }
+          } else {
+            /* If user presses the floating action btn while on another tab,
+              Default to Home Page
+            */
+            setState(() => _bottomNavIndex = 1);
           }
         },
         backgroundColor: const Color(0xFF5E6C85), // Wireframe blue color
@@ -93,8 +111,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
         notchSmoothness: NotchSmoothness.softEdge,
         leftCornerRadius: 32,
         rightCornerRadius: 32,
-        activeColor: const Color(0xFF5E6C85),
-        inactiveColor: Colors.grey,
+        // Update the state (selected index) when tapping a tab
         onTap: (index) {
           setState(() => _bottomNavIndex = index);
         },

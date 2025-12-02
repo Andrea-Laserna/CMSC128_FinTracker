@@ -1,20 +1,24 @@
+// Store data and display it broken down by day of the week
+
 import 'package:flutter/material.dart';
 import 'expense_model.dart';
+import 'dart:core';
 
 class HomePage extends StatefulWidget {
-  final List<Expense> expenses; 
-  final Function(int) onDelete;
+  // Global key to access state of Home Page from outside
+  static final GlobalKey<_HomePageState> homePageStateKey = GlobalKey<_HomePageState>();
+  
+  const HomePage({super.key});
 
-  const HomePage({
-    super.key, 
-    required this.expenses, 
-    required this.onDelete,
-  });
+  // Permanent storage for every expense (static to make it accessible from anywhere in the app)
+  static final List<Expense> expenses = [];
+
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
+// Set up a stateful widget with mixing for animation control
 class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   
   final Color kBlueLight = const Color(0xFFDCE8F5);
@@ -22,55 +26,49 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   late List<DateTime> weekDates;
   late String currentMonthName;
+   // Manage tabs on top of screen (the days of the week)
   late TabController _tabController; 
-
-  @override
-  void initState() {
-    super.initState();
-    weekDates = _getCurrentWeekDates();
-    
+ 
     final now = DateTime.now();
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    currentMonthName = months[now.month - 1];
-
-    _tabController = TabController(length: weekDates.length, vsync: this);
-
-    int todayIndex = 0;
-    for (int i = 0; i < weekDates.length; i++) {
-      if (_isSameDay(weekDates[i], now)) {
-        todayIndex = i;
-        break;
-      }
-    }
-    _tabController.index = todayIndex;
-
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        setState(() {}); 
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose(); 
-    super.dispose();
-  }
-
-  List<DateTime> _getCurrentWeekDates() {
-    final now = DateTime.now();
-    final startOfWeek = now.subtract(Duration(days: now.weekday % 7));
+    final startOfWeek = now.subtract(Duration(days: now.weekday -1));
     return List.generate(7, (i) => startOfWeek.add(Duration(days: i)));
   }
 
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
+late List<DateTime> weekDates; 
+  @override
+  void initState() {
+    super.initState();
+    // Calculate dates for the current week
+    weekDates = getCurrentWeekDates(); 
+    _tabController = TabController(length: weekDates.length, vsync: this, initialIndex: DateTime.now().weekday - 1); 
   }
 
-  // --- LOGIC: EDIT EXPENSE ---
-  void _editExpense(int index, String name, double amount, String category, DateTime date, String details) {
+  @override
+  // Clean up page
+  void dispose() {
+    // Tell the controller to free up system sources (manages the Mon-Sun tabs)
+    _tabController.dispose();
+    super.dispose(); 
+  }
+
+  DateTime getSelectedDate() {
+    // Get actual date time object for the day 
+    return weekDates[_tabController.index];
+  }
+
+  void _deleteExpense(int index) {
+    // Notify flutter with the data change and trigger build method to run again
     setState(() {
-      widget.expenses[index] = Expense(
+      HomePage.expenses.removeAt(index);
+    });
+  }
+
+  void _editExpense(int index, String name, double amount, String category,
+      DateTime date, String details) {
+    // Update UI after change
+    setState(() {
+      // Instead of removing, we update the existing data
+      HomePage.expenses[index] = Expense(
         name: name,
         amount: amount,
         category: category,
@@ -80,25 +78,30 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     });
   }
 
-  void _openEditExpenseDialog(int listIndex, Expense expense) {
-    int realIndex = widget.expenses.indexOf(expense);
-    if (realIndex == -1) return; 
+  // Edit popup
+  void _openEditExpenseDialog(int index) {
+    // Retrieve current expense object
+    Expense e = HomePage.expenses[index];
+    // Extract values from the object
+    String name = e.name;
+    String amount = e.amount.toString();
+    String category = e.category;
+    String details = e.details;
+    DateTime selectedDate = e.date;
 
-    String name = expense.name;
-    String amount = expense.amount.toString();
-    String category = expense.category;
-    String details = expense.details;
-    DateTime selectedDate = expense.date;
-
+    // Display popup window
     showDialog(
       context: context,
       builder: (context) {
+        // Self contained state since AlertDialog doesnt redraw after change
+        //  Redraw the dialog only
         return StatefulBuilder(builder: (context, setStateDialog) {
           return AlertDialog(
             title: const Text('Edit Expense'),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                // Input boxes to change details
                 children: [
                   TextField(
                     decoration: const InputDecoration(labelText: 'Expense Name'),
@@ -157,6 +160,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Cancel'),
               ),
+              // Submission Point
               ElevatedButton(
                 onPressed: () {
                   if (name.isNotEmpty && double.tryParse(amount) != null) {
@@ -188,6 +192,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         title: Text(
           currentMonthName,
           style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        title: const Text("Weekly Expenses"),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          tabs: weekDates.map((date) => Tab(
+            text: '${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][date.weekday-1]} ${date.day}/${date.month}',
+          )).toList(),
         ),
         centerTitle: true,
       ),
@@ -261,6 +272,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   Widget _buildDayPage(DateTime date) {
     final dayExpenses = widget.expenses.where((e) => _isSameDay(e.date, date)).toList();
+    body: TabBarView(
+      controller: _tabController,
+      children: weekDates.asMap().entries.map((entry) {
+        final index = entry.key;
+        final day = entry.value; 
+        // Filter expenses by selected weekday
+        final filtered = HomePage.expenses.where((e) {
+          return e.date.year == weekDates[index].year &&
+                 e.date.month == weekDates[index].month &&
+                 e.date.day == weekDates[index].day;
+        }).toList();
 
     return Column(
       children: [
