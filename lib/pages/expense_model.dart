@@ -1,7 +1,8 @@
+// Definition of an Expense
 class Expense {
-  final String name;
-  final double amount;
-  final String category;
+  final String name;     
+  final double amount;    
+  final String category;  
   final DateTime date;
   final String details;
 
