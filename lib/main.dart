@@ -121,7 +121,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       
-      bottomNavigationBar: LayoutBuilder(
+    bottomNavigationBar: LayoutBuilder(
         builder: (BuildContext innerContext, BoxConstraints constraints) {
           return AnimatedBottomNavigationBar(
             icons: iconList,
