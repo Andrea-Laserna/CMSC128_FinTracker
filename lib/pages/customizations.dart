@@ -9,7 +9,7 @@ class CustomizationPage extends StatefulWidget {
 
 class _CustomizationPageState extends State<CustomizationPage> {
   // State variables for customization options
-  String _budgetAmount = ''; // Budget text input
+  String _budgetAmount = ''; 
   String _selectedBudgetFrequency = 'Weekly'; 
   String _selectedReminderFrequency = 'Daily';
   TimeOfDay _selectedTime = const TimeOfDay(hour: 20, minute: 0); // Default to 8:00 PM
@@ -42,17 +42,15 @@ class _CustomizationPageState extends State<CustomizationPage> {
 
   // Function called when the Done button is pressed
   void _saveCustomizations() {
-    // 1. Get the final budget amount
     _budgetAmount = _budgetController.text;
 
-    // 2. Output the current settings (You would replace this with saving logic)
+    // Output settings (Replace with actual save logic later)
     print('--- Customizations Saved ---');
     print('Budget Amount: \$$_budgetAmount');
     print('Budget Cycle: $_selectedBudgetFrequency');
     print('Reminder Frequency: $_selectedReminderFrequency');
     print('Reminder Time: ${_selectedTime.format(context)}');
     
-    // In a real app, you would navigate away or save data to a database here.
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Customizations saved successfully!')),
     );
@@ -61,64 +59,89 @@ class _CustomizationPageState extends State<CustomizationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              const SizedBox(height: 50),
-              // --- Title Section ---
-              const Text(
-                'Customize your budget and notifications.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+      // 1. Center the content to simulate mobile view on web
+      body: Center( 
+        child: SingleChildScrollView(
+          child: Container(
+            // 2. Constrain width and add card styling
+            width: 380, 
+            padding: const EdgeInsets.all(24.0),
+            margin: const EdgeInsets.symmetric(vertical: 24.0),
+            decoration: BoxDecoration(
+              color: const Color(0xFFB0BCC9), // The grey/blue card color
+              borderRadius: BorderRadius.circular(20), // Rounded corners
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
                 ),
-              ),
-              const SizedBox(height: 30),
-
-              // --- 1. Set Your Budget ---
-              _buildSectionTitle('Set your budget'),
-              _buildBudgetInputField(),
-              const SizedBox(height: 20),
-
-              // --- 2. Choose Your Budget Cycle ---
-              _buildSectionTitle('Choose your budget cycle'),
-              _buildDropdownSelector(
-                value: _selectedBudgetFrequency,
-                items: _budgetFrequencies,
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedBudgetFrequency = newValue!;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-
-              // --- 3. Set Your Reminder Frequency ---
-              _buildSectionTitle('Set your reminder frequency'),
-              _buildReminderRow(context),
-              const SizedBox(height: 40),
-
-              // --- 4. Done Button ---
-              ElevatedButton(
-                onPressed: _saveCustomizations,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50), // Full width button
-                  backgroundColor: Colors.blue[900], // Dark color from Figma
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                const SizedBox(height: 10),
+                
+                // --- HEADER SECTION ---
+                const Center(
+                  child: Text(
+                    "Customization",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D3E50),
+                    ),
                   ),
                 ),
-                child: const Text(
-                  'Done',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(height: 10),
+                const Divider(color: Colors.black12, thickness: 1), 
+                const SizedBox(height: 20),
+
+                // --- 1. Set Your Budget ---
+                _buildSectionTitle('Set your budget'),
+                _buildBudgetInputField(),
+                const SizedBox(height: 16),
+
+                // --- 2. Choose Your Budget Cycle ---
+                _buildSectionTitle('Choose your budget cycle'),
+                _buildDropdownSelector(
+                  value: _selectedBudgetFrequency,
+                  items: _budgetFrequencies,
+                  onChanged: (newValue) {
+                    setState(() {
+                      _selectedBudgetFrequency = newValue!;
+                    });
+                  },
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+
+                // --- 3. Set Your Reminder Frequency ---
+                _buildSectionTitle('Set your reminder frequency'),
+                _buildReminderRow(context),
+                const SizedBox(height: 32),
+
+                // --- 4. Done Button ---
+                ElevatedButton(
+                  onPressed: _saveCustomizations,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50),
+                    backgroundColor: const Color(0xFF1E2B3C), // Dark Navy button
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                // Skip button removed from here
+              ],
+            ),
           ),
         ),
       ),
@@ -128,50 +151,58 @@ class _CustomizationPageState extends State<CustomizationPage> {
   // Helper widget for section titles
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: 8.0, left: 4.0),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 16, color: Colors.black54),
+        style: const TextStyle(
+          fontSize: 13, 
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF2D3E50)
+        ),
       ),
     );
   }
 
-  // Helper widget for the budget input field
+  // Helper widget for the budget input field (White Box Style)
   Widget _buildBudgetInputField() {
     return TextField(
       controller: _budgetController,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
         hintText: 'Enter your budget here',
+        filled: true,
+        fillColor: Colors.white, // White background
+        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide.none, // Remove the border line
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
 
-  // Helper widget for a generic dropdown selector
+  // Helper widget for a generic dropdown selector (White Box Style)
   Widget _buildDropdownSelector({
     required String value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8.0),
+        color: Colors.white, // White background
+        borderRadius: BorderRadius.circular(12.0),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down),
+          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black54),
           items: items.map<DropdownMenuItem<String>>((String item) {
             return DropdownMenuItem<String>(
               value: item,
-              child: Text(item),
+              child: Text(item, style: const TextStyle(fontSize: 14)),
             );
           }).toList(),
           onChanged: onChanged,
@@ -184,7 +215,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
   Widget _buildReminderRow(BuildContext context) {
     return Row(
       children: [
-        // Dropdown for Frequency (e.g., Daily)
+        // Frequency Dropdown
         Expanded(
           flex: 3,
           child: _buildDropdownSelector(
@@ -198,21 +229,30 @@ class _CustomizationPageState extends State<CustomizationPage> {
           ),
         ),
         const SizedBox(width: 10),
-        // Time Button (e.g., 8:00 PM)
+        
+        // Time Button (White Box Style)
         Expanded(
           flex: 2,
-          child: OutlinedButton(
-            onPressed: () => _selectTime(context),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              side: const BorderSide(color: Colors.grey),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          child: GestureDetector(
+            onTap: () => _selectTime(context),
+            child: Container(
+              height: 48, // Match height of dropdowns roughly
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
               ),
-            ),
-            child: Text(
-              _selectedTime.format(context),
-              style: const TextStyle(fontSize: 16, color: Colors.black),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _selectedTime.format(context),
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
+                  ),
+                  const Icon(Icons.access_time, size: 18, color: Colors.black54),
+                ],
+              ),
             ),
           ),
         ),
