@@ -9,6 +9,7 @@ import 'pages/add_expense.dart';
 import 'pages/profile.dart';
 import 'pages/expense_model.dart';
 import 'pages/landing.dart';
+import 'utils/notification_helper.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -60,7 +61,7 @@ class MyApp extends StatelessWidget {
 
 Future<bool> _shouldShowLanding() async {
   // Debug override: set to true to always show LandingPage during testing
-  const bool kForceShowLanding = true;
+  const bool kForceShowLanding = false;
   if (kForceShowLanding) return true;
   final prefs = await SharedPreferences.getInstance();
   // Default to true on first run if not set
@@ -174,5 +175,14 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
         },
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // After first frame, schedule notifications if pending in prefs
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationHelper.scheduleFromPrefs();
+    });
   }
 }

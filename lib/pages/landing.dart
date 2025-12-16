@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
 import 'customizations.dart';
-import 'homepage.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});

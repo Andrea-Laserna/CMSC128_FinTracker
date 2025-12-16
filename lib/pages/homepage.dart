@@ -246,8 +246,9 @@ class _HomePageState extends State<HomePage>
                         DropdownMenuItem(value: 'wants', child: Text('Wants')),
                       ],
                       onChanged: (String? value) {
-                        if (value != null)
+                        if (value != null) {
                           setStateDialog(() => category = value);
+                        }
                       },
                     ),
                     TextField(

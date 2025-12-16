@@ -4,6 +4,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../main.dart';
+import '../utils/notification_helper.dart';
 import 'dart:io';
 
 class CustomizationPage extends StatefulWidget {
@@ -71,6 +72,23 @@ class _CustomizationPageState extends State<CustomizationPage> {
         print('Notification tapped with payload: ${response.payload}');
       },
     );
+
+    // On Android 13+, request notification permission if not granted
+    if (Platform.isAndroid) {
+      final androidImpl = flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      try {
+        final enabled = await androidImpl?.areNotificationsEnabled();
+        if (enabled == false) {
+          await androidImpl?.requestNotificationsPermission();
+        }
+      } catch (e) {
+        // Best-effort; do not block
+        print('Notification permission check failed: $e');
+      }
+    }
   }
 
   //Notification schedule
@@ -160,29 +178,26 @@ class _CustomizationPageState extends State<CustomizationPage> {
         matchDateTimeComponents: matchComponents,
       );
       print(
-        '${_selectedReminderFrequency} reminder scheduled (exact) for ${_selectedTime.format(context)}',
+        '$_selectedReminderFrequency reminder scheduled (exact) for ${_selectedTime.format(context)}',
       );
     } catch (e) {
       // Android 14+ may restrict exact alarms
-      await flutterLocalNotificationsPlugin.zonedSchedule(
-        notificationId,
-        title,
-        body,
-        nextSchedule,
-        notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.inexact,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-        matchDateTimeComponents: matchComponents,
-      );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Exact alarms not allowed. Using inexact reminders.'),
-          ),
+      try {
+        await flutterLocalNotificationsPlugin.zonedSchedule(
+          notificationId,
+          title,
+          body,
+          nextSchedule,
+          notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.inexact,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: matchComponents,
         );
+        print('Exact alarm not permitted, scheduled inexact: $e');
+      } catch (e2) {
+        print('Failed to schedule even inexact reminder: $e2');
       }
-      print('Exact alarm not permitted, scheduled inexact: $e');
     }
   }
 
@@ -204,7 +219,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
     _budgetAmount = _budgetController.text.trim();
 
     // Accept existing saved budget if input is empty; otherwise sanitize and parse
-    double? _parseBudget(String text) {
+    double? parseBudget(String text) {
       final cleaned = text.replaceAll(RegExp(r'[^0-9\.]'), '');
       if (cleaned.isEmpty) return null;
       return double.tryParse(cleaned);
@@ -214,7 +229,7 @@ class _CustomizationPageState extends State<CustomizationPage> {
     if (_budgetAmount.isEmpty) {
       budgetToSave = _savedBudget; // keep previously saved budget
     } else {
-      budgetToSave = _parseBudget(_budgetAmount);
+      budgetToSave = parseBudget(_budgetAmount);
     }
 
     if (budgetToSave == null || budgetToSave < 0) {
@@ -231,6 +246,12 @@ class _CustomizationPageState extends State<CustomizationPage> {
       _selectedBudgetFrequency,
     ); // 'Weekly' | 'Monthly'
     await prefs.setBool('notificationsEnabled', _notificationsEnabled);
+    // Persist reminder settings for scheduling later
+    await prefs.setString('reminderFrequency', _selectedReminderFrequency);
+    await prefs.setInt('reminderHour', _selectedTime.hour);
+    await prefs.setInt('reminderMinute', _selectedTime.minute);
+    // Mark that scheduling should occur after navigation
+    await prefs.setBool('pendingSchedule', _notificationsEnabled);
     // Start a new cycle now
     await prefs.setInt(
       'cycleStartEpochMs',
@@ -241,47 +262,23 @@ class _CustomizationPageState extends State<CustomizationPage> {
     setState(() {
       _savedBudget = budgetToSave;
     });
-    // Optionally (re)schedule reminders based on current settings
-    if (Platform.isAndroid ||
-        Platform.isIOS ||
-        Platform.isMacOS ||
-        Platform.isLinux) {
-      if (_notificationsEnabled) {
-        await _scheduleReminder();
-      } else {
-        await flutterLocalNotificationsPlugin.cancelAll();
-      }
-    }
 
-    // Show count of pending scheduled notifications
-    if (Platform.isAndroid ||
-        Platform.isIOS ||
-        Platform.isMacOS ||
-        Platform.isLinux) {
-      final pending = await flutterLocalNotificationsPlugin
-          .pendingNotificationRequests();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${pending.length} pending notifications found (see console)',
-          ),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Notifications not supported on Windows; settings saved.',
-          ),
-        ),
+    // Fire a one-off test notification if reminders are enabled
+    if (_notificationsEnabled) {
+      await NotificationHelper.showTestNotification(
+        message:
+            'Reminders set for ${_selectedTime.format(context)} ($_selectedReminderFrequency).',
       );
     }
 
-    // Continue to Home page after saving
-    Navigator.pushReplacement(
-      context,
+    // Navigate immediately to Home, do not block on scheduling
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const ExpenseHomePage()),
+      (route) => false,
     );
+
+    // Scheduling will be handled on Home after navigation based on pending flag
   }
 
   Future<void> _loadExistingSettings() async {
@@ -304,6 +301,21 @@ class _CustomizationPageState extends State<CustomizationPage> {
         _notificationsEnabled = notif;
       });
     }
+
+    // Load saved reminder frequency and time if available
+    final savedFreq = prefs.getString('reminderFrequency');
+    if (savedFreq != null && _reminderFrequencies.contains(savedFreq)) {
+      setState(() {
+        _selectedReminderFrequency = savedFreq;
+      });
+    }
+    final hour = prefs.getInt('reminderHour');
+    final minute = prefs.getInt('reminderMinute');
+    if (hour != null && minute != null) {
+      setState(() {
+        _selectedTime = TimeOfDay(hour: hour, minute: minute);
+      });
+    }
   }
 
   String _formatCurrency(double value) => '₱${value.toStringAsFixed(2)}';
@@ -315,6 +327,28 @@ class _CustomizationPageState extends State<CustomizationPage> {
     });
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notificationsEnabled', _notificationsEnabled);
+    if (enabled && Platform.isAndroid) {
+      final androidImpl = flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      try {
+        final allowed = await androidImpl?.areNotificationsEnabled();
+        if (allowed == false) {
+          await androidImpl?.requestNotificationsPermission();
+        }
+        // If enabled (or just granted), pop a test notification immediately
+        final nowAllowed = await androidImpl?.areNotificationsEnabled();
+        if (nowAllowed != false) {
+          await NotificationHelper.showTestNotification(
+            message:
+                'Reminders are enabled. Daily tracking keeps you on budget!',
+          );
+        }
+      } catch (e) {
+        print('Permission request failed: $e');
+      }
+    }
     if (!enabled) {
       if (Platform.isAndroid ||
           Platform.isIOS ||
@@ -421,16 +455,8 @@ class _CustomizationPageState extends State<CustomizationPage> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
-              // TEMPORARY: Button to check pending notifications
-              Visibility(
-                visible: _notificationsEnabled,
-                maintainState: true,
-                child: TextButton(
-                  onPressed: _checkPendingNotifications,
-                  child: const Text('Check Pending Reminders (For Testing)'),
-                ),
-              ),
-              // END TEMPORARY
+              
+              
             ],
           ),
         ),
