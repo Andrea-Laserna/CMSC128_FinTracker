@@ -146,21 +146,44 @@ class _CustomizationPageState extends State<CustomizationPage> {
       return;
     }
 
-    // Schedule the repeating notification
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      notificationId,
-      title,
-      body,
-      nextSchedule,
-      notificationDetails,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: matchComponents,
-    );
-    print(
-      '${_selectedReminderFrequency} reminder scheduled for ${_selectedTime.format(context)}',
-    );
+    // Schedule the repeating notification, prefer exact; fall back if not permitted
+    try {
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        notificationId,
+        title,
+        body,
+        nextSchedule,
+        notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: matchComponents,
+      );
+      print(
+        '${_selectedReminderFrequency} reminder scheduled (exact) for ${_selectedTime.format(context)}',
+      );
+    } catch (e) {
+      // Android 14+ may restrict exact alarms
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        notificationId,
+        title,
+        body,
+        nextSchedule,
+        notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.inexact,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: matchComponents,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Exact alarms not allowed. Using inexact reminders.'),
+          ),
+        );
+      }
+      print('Exact alarm not permitted, scheduled inexact: $e');
+    }
   }
 
   // Function to show the time picker dialog (same as before)

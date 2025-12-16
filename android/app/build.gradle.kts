@@ -7,16 +7,20 @@ plugins {
 
 android {
     namespace = "com.example.fins"
-    compileSdk = flutter.compileSdkVersion
+    // Pin to installed Android API level (user uses API 36)
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        // Use Java 17 and enable core library desugaring
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        // Match Kotlin JVM target to Java 17
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -25,7 +29,8 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        // Match targetSdk to installed API level
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -41,4 +46,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Required for Java 8+ APIs on older Android API levels
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
