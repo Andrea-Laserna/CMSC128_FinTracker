@@ -4,6 +4,7 @@ import 'dart:async';
 import '../database/db_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'monthly_view.dart';
+import 'edit_page.dart';
 
 class HomePage extends StatefulWidget {
   // Note: The expenses list is managed statically now (HomePage.expenses)
@@ -136,20 +137,66 @@ class _HomePageState extends State<HomePage>
     bool undone = false;
 
     messenger.hideCurrentSnackBar();
-    messenger
-        .showSnackBar(
+    messenger.showSnackBar(
           SnackBar(
-            content: Text('Deleted "${item.name}"'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             duration: const Duration(seconds: 5),
-            action: SnackBarAction(
-              label: 'Undo',
-              onPressed: () {
-                undone = true;
-                // Restore item at original position
-                setState(() {
-                  HomePage.expenses.insert(index, item);
-                });
-              },
+            content: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(185, 28, 35, 64),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.18),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.delete_outline_rounded, color: Colors.white70, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Deleted "${item.name}"',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      undone = true;
+                      messenger.hideCurrentSnackBar();
+                      setState(() {
+                        HomePage.expenses.insert(index, item);
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Undo',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         )
@@ -196,143 +243,26 @@ class _HomePageState extends State<HomePage>
   }
 
   // Edit popup
-  void _openEditExpenseDialog(int index) {
-    Expense e = HomePage.expenses[index];
-    String name = e.name;
-    String amountText = e.amount.toStringAsFixed(2);
-    String category = e.category;
-    String details = e.details;
-    DateTime selectedDate = e.date;
+ void _openEditExpenseDialog(int index) async {
+    final expense = HomePage.expenses[index];
 
-    final nameController = TextEditingController(text: name);
-    final amountController = TextEditingController(text: amountText);
-    final detailsController = TextEditingController(text: details);
+    final updated = await Navigator.push<Expense>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditExpensePage(expense: expense),
+      ),
+    );
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return AlertDialog(
-              title: const Text('Edit Expense'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      decoration: const InputDecoration(
-                        labelText: 'Expense Name',
-                      ),
-                      controller: nameController,
-                      onChanged: (value) => name = value,
-                    ),
-                    TextField(
-                      decoration: const InputDecoration(labelText: 'Amount'),
-                      controller: amountController,
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) => amountText = value,
-                    ),
-                    DropdownButtonFormField<String>(
-                      initialValue:
-                          [
-                            'transpo',
-                            'food',
-                            'education',
-                            'wants',
-                          ].contains(category)
-                          ? category
-                          : 'transpo',
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'transpo',
-                          child: Text('Transpo'),
-                        ),
-                        DropdownMenuItem(value: 'food', child: Text('Food')),
-                        DropdownMenuItem(
-                          value: 'education',
-                          child: Text('Education'),
-                        ),
-                        DropdownMenuItem(value: 'wants', child: Text('Wants')),
-                      ],
-                      onChanged: (String? value) {
-                        if (value != null)
-                          setStateDialog(() => category = value);
-                      },
-                    ),
-                    TextField(
-                      decoration: const InputDecoration(labelText: 'Details'),
-                      controller: detailsController,
-                      onChanged: (value) => details = value,
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Text(
-                          'Date: ${selectedDate.toLocal().toString().split(' ')[0]}',
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () async {
-                            final pickedDate = await showDatePicker(
-                              context: context,
-                              initialDate: selectedDate,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100),
-                            );
-                            if (pickedDate != null) {
-                              setStateDialog(() => selectedDate = pickedDate);
-                            }
-                          },
-                          child: const Text('Select Date'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    final double? amount = double.tryParse(
-                      amountController.text,
-                    );
-                    if (nameController.text.isNotEmpty &&
-                        amount != null &&
-                        amount > 0) {
-                      _editExpense(
-                        index,
-                        nameController.text,
-                        amount,
-                        category,
-                        selectedDate,
-                        detailsController.text,
-                      );
-                      Navigator.pop(context);
-                    } else {
-                      // simple feedback if invalid
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please enter a positive amount.'),
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    ).then((_) {
-      nameController.dispose();
-      amountController.dispose();
-      detailsController.dispose();
-    });
+    if (updated != null) {
+      _editExpense(
+        index,
+        updated.name,
+        updated.amount,
+        updated.category,
+        updated.date,
+        updated.details,
+      );
+    }
   }
 
   String _getWeeklyTotal() {
