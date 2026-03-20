@@ -10,11 +10,11 @@ import 'pages/add_expense.dart';
 import 'pages/profile.dart';
 import 'pages/expense_model.dart';
 import 'pages/landing.dart';
+import 'utils/notification_helper.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sqflite_common_ffi/sqflite_ffi.dart'; 
-// import 'dart:io'; // <-- New Import
 
 /*
 ===============
@@ -32,7 +32,6 @@ void main() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
-
   runApp(const MyApp());
 }
 
@@ -64,9 +63,6 @@ class MyApp extends StatelessWidget {
 }
 
 Future<bool> _shouldShowLanding() async {
-  // Debug override: set to true to always show LandingPage during testing
-  const bool kForceShowLanding = true;
-  if (kForceShowLanding) return true;
   final prefs = await SharedPreferences.getInstance();
   // Default to true on first run if not set
   final isFirstTime = prefs.getBool('isFirstTime');
@@ -107,6 +103,15 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
     Icons.settings,
     Icons.person,
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // After first frame, schedule notifications if pending in prefs.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationHelper.scheduleFromPrefs();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
