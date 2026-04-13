@@ -3,6 +3,8 @@ import 'package:table_calendar/table_calendar.dart';
 import '../database/db_helper.dart';
 import 'expense_model.dart';
 
+import '../pages/expenses/add/add_expense_page.dart';
+
 class MonthlyViewPage extends StatefulWidget {
   const MonthlyViewPage({super.key});
 
@@ -294,13 +296,13 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildSummaryCard(
-                  "Monthly Total",
+                  "This Month's Total",
                   "₱${_getMonthlyTotal().toStringAsFixed(2)}",
                   const Color(0xFFDCE8F5),
                 ),
                 const SizedBox(width: 12),
                 _buildSummaryCard(
-                  "Daily Total",
+                  "Today's Total",
                   "₱${_getSelectedDayTotal().toStringAsFixed(2)}",
                   const Color(0xFFEAEAF4),
                 ),
@@ -312,7 +314,8 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
             child: selectedDayExpenses.isEmpty
               ? Center(
                   child: Text(
-                    'No expenses for ${_selectedDay?.month}/${_selectedDay?.day}.',
+                    'You have no expenses for ${_selectedDay?.month}/${_selectedDay?.day}.\nTap the + button to log an expense.',
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.grey, 
                       fontSize: 16
@@ -330,6 +333,29 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
           ),
         ],
       ),
+
+      floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
+        backgroundColor: const Color(0xFF5E6C85), 
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () async {
+          // Uses the selected day from the calendar as the initial date
+          final initialDate = _selectedDay ?? DateTime.now();
+          
+          // Navigates to AddExpensePage
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AddExpensePage(initialDate: initialDate),
+            ),
+          );
+          
+          _loadAllExpenses(); 
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+
+      
     );
   }
 }
