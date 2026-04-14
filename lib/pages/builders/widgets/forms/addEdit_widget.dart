@@ -104,10 +104,9 @@ Widget buildExpenseCategoryDropdown({
     'school',
     'groceries',
     'bill',
-    'custom',
-    // Backward compatibility for older saved entries.
     'education',
     'wants',
+    'custom',
   ];
   final safeValue = validCategories.contains(value) ? value : 'food';
 
@@ -134,9 +133,9 @@ Widget buildExpenseCategoryDropdown({
           DropdownMenuItem(value: 'school',    child: Text('School')),
           DropdownMenuItem(value: 'groceries', child: Text('Groceries')),
           DropdownMenuItem(value: 'bill',      child: Text('Bill')),
-          DropdownMenuItem(value: 'custom',    child: Text('Custom')),
           DropdownMenuItem(value: 'education', child: Text('Education')),
           DropdownMenuItem(value: 'wants',     child: Text('Wants')),
+          DropdownMenuItem(value: 'custom',    child: Text('Custom')),
         ],
         onChanged: onChanged,
       ),
