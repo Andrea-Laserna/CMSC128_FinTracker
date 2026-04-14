@@ -16,14 +16,14 @@ bool get _supportsNotifications =>
      defaultTargetPlatform == TargetPlatform.iOS ||
      defaultTargetPlatform == TargetPlatform.windows);
 
-class CustomizationPage extends StatefulWidget {
-  const CustomizationPage({super.key});
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
 
   @override
-  State<CustomizationPage> createState() => _CustomizationPageState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _CustomizationPageState extends State<CustomizationPage> {
+class _SettingsPageState extends State<SettingsPage> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
