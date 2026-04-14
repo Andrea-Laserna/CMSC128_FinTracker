@@ -123,18 +123,21 @@ class _AddExpensePageState extends State<AddExpensePage> {
                             ),
                             const SizedBox(height: 14),
 
-                            if (category == 'custom')
-                              TextFormField(
-                                decoration: const InputDecoration(labelText: 'Custom Category'),
-                                onChanged: (val) => customCategory = val,
-                                validator: (val) {
+                            if (category == 'custom') ...[
+                              buildLabel('Custom Category'),
+                              buildTextInput(
+                                hint: 'Enter custom category',
+                                onChanged: (v) => customCategory = v,
+                                validator: (v) {
                                   if (category == 'custom' &&
-                                      (val == null || val.trim().isEmpty)) {
+                                      (v == null || v.trim().isEmpty)) {
                                     return 'Enter a custom category';
                                   }
                                   return null;
                                 },
                               ),
+                              const SizedBox(height: 14),
+                            ],
 
                             // Date Spent
                             buildLabel('Date Spent'),
