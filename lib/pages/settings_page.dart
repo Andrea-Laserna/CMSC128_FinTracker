@@ -27,12 +27,12 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  late final theme = Theme.of(context);
-  AppThemeType _currentTheme = AppThemeType.blue;
+  late AppThemeType _currentTheme;
 
   @override
   void initState() {
     super.initState();
+    _currentTheme = ThemeController.notifier.value;
   }
 
   @override
