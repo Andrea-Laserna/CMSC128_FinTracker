@@ -161,11 +161,14 @@ class _HoverAnimatedButtonState extends State<_HoverAnimatedButton> with SingleT
   }
 
   void _onHover(bool isHovering) {
-    if (isHovering) {
-      _hoverController.forward();
-    } else {
-      _hoverController.reverse();
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (isHovering) {
+        _hoverController.forward();
+      } else {
+        _hoverController.reverse();
+      }
+    });
   }
 
   @override

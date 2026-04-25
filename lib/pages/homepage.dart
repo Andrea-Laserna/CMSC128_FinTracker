@@ -7,6 +7,7 @@ import 'expenses/edit/edit_expense_page.dart';
 import '../utils/date_utils.dart';
 import 'builders/widgets/home/day_page.dart';
 import 'customizations.dart';
+import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback? onSummaryTap;
@@ -231,11 +232,16 @@ class _HomePageState extends State<HomePage>
             },
           ),
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.black),
+            icon: const Icon(Icons.palette_outlined, color: Colors.black),
             onPressed: () async {
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const CustomizationPage()),
+                MaterialPageRoute(
+                  // fullscreenDialog prevents the hero transition that causes
+                  // a black flash when the theme changes the scaffold color.
+                  fullscreenDialog: true,
+                  builder: (_) => const SettingsPage(),
+                ),
               );
               _loadBudget();
             },
