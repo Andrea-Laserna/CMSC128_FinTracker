@@ -38,6 +38,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
+      backgroundColor: context.surface,
       body: Stack(
         children: [
           const Bubble(top: -30, right: -20, size: 160, opacity: 0.45),

@@ -20,43 +20,34 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-// import for app theme controller
 import 'package:fins/themes/logic/theme_controller.dart';
 
-/*
-===============
-  ENTRY POINT
-===============
-*/ 
 void main() async {
-// 1. Critical first step
   WidgetsFlutterBinding.ensureInitialized(); 
-
-  // 2. Initialize global timezone database
   tz_data.initializeTimeZones();
-
   String timeZoneName = 'Asia/Manila'; // Default starting point
   
   try {
     // Attempt to get the phone's timezone with a strict timeout
     final dynamic tzResult = await FlutterTimezone.getLocalTimezone()
         .timeout(const Duration(seconds: 1));
-    
-    timeZoneName = tzResult is String ? tzResult : tzResult.toString();
-    
+    final raw = tzResult is String ? tzResult : tzResult.toString();
+    final match = RegExp(r'TimezoneInfo\(([^,)]+)').firstMatch(raw);
+    timeZoneName = match != null ? match.group(1)!.trim() : raw.trim();
+
     // Safety check: Ensure the location exists in the database
     tz.setLocalLocation(tz.getLocation(timeZoneName));
   } catch (e) {
-    debugPrint("Timezone error: $e. Falling back to Manila.");
+    debugPrint("Timezone sync failed, using Asia/Manila fallback: $e");
     // Force set to Manila if anything goes wrong
     tz.setLocalLocation(tz.getLocation('Asia/Manila'));
   }
 
-  // 3. Match the name in your NotificationHelper
-  // Ensure this is PUBLIC in notification_helper.dart
-  // Ensures that engine is ready
-  await NotificationHelper.ensureInitialized(); 
+  try {
+    await NotificationHelper.ensureInitialized();
+  } catch (e) {
+    debugPrint("NotificationHelper init failed: $e");
+  }
 
   if (!kIsWeb && (
     defaultTargetPlatform == TargetPlatform.windows ||
@@ -70,7 +61,6 @@ void main() async {
   runApp(const MyApp());
 }
 
-// Define the root widget, set the application theme, and entry screen (ExpenseHomePage)
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -141,12 +131,6 @@ Future<void> resetFirstRunForTesting() async {
   await prefs.setBool('hasCompletedOnboarding', false);
 }
 
-/*
-===============
-  Main Screen
-===============
-*/ 
-
 // Stateful because it needs to track which tab is currently selected
 class ExpenseHomePage extends StatefulWidget {
   const ExpenseHomePage({super.key});
@@ -159,22 +143,24 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
   // Track selected tab. 0 is 'Home'.
   int _bottomNavIndex = 0;
 
-  // The master list is now static inside HomePage, so this list is removed:
-  // final List<Expense> myExpenses = []; 
-
   final iconList = <IconData>[
     Icons.home,
     Icons.bar_chart,
-    Icons.settings,
-    Icons.person,
+    Icons.wallet,       // budget & customizations
+    Icons.person,       // future AI page
   ];
 
   @override
   void initState() {
     super.initState();
     // After first frame, schedule notifications if pending in prefs.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      NotificationHelper.scheduleFromPrefs();
+    // Guarded so a LateInitializationError from the plugin never crashes the UI.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await NotificationHelper.scheduleFromPrefs();
+      } catch (e) {
+        debugPrint("scheduleFromPrefs failed: $e");
+      }
     });
   }
 
@@ -191,8 +177,8 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
         },
       ),
       const SummaryPage(),
-      const CustomizationPage(),
-      const SettingsPage(),  // temp settings instead of profile page for now, sorry guys need ko dnay ibypass
+      const CustomizationPage(),  // budget & expense settings (wallet icon)
+      const ProfilePage(),       // placeholder — will become AI page
     ];
 
     return Scaffold(
@@ -201,7 +187,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
       body: pages[_bottomNavIndex],
       // Code for the add button
       floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(), // <--- Makes the button perfectly round
+        shape: const CircleBorder(),
         backgroundColor: context.primary,
         onPressed: () async {
           // Check if we are in Home Page (index 0)
