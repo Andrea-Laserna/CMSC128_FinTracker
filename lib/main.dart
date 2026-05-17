@@ -207,7 +207,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
         ],
       ),
       // Code for the add button
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _showMonthlyOverlay ? null : FloatingActionButton(
         shape: const CircleBorder(),
         backgroundColor: context.primary,
         onPressed: () async {
@@ -240,7 +240,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       
-      bottomNavigationBar: LayoutBuilder(
+      bottomNavigationBar: _showMonthlyOverlay ? null : LayoutBuilder(
         builder: (BuildContext innerContext, BoxConstraints constraints) {
           return AnimatedBottomNavigationBar(
             icons: iconList,

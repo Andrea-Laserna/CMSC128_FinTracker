@@ -48,14 +48,14 @@ class _ThemeSelectorPopupState extends State<ThemeSelectorPopup> {
                 width: double.infinity,
                   child: GridView.count(
                   shrinkWrap: true,
-                  crossAxisCount: 1,
+                  crossAxisCount: AppThemeType.values.length,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
                   physics: const NeverScrollableScrollPhysics(),
-                  childAspectRatio: 6,
+                  childAspectRatio: 1,
                   children: AppThemeType.values.map((type) {
                     return Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: Alignment.center,
                       child: _buildThemeChoice(
                         type: type,
                         isSelected: _tempSelectedTheme == type,

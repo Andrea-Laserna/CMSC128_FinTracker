@@ -3,7 +3,6 @@ import 'builders/designs/colors.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../database/db_helper.dart';
 import 'expense_model.dart';
-
 import '../pages/expenses/add/add_expense_page.dart';
 
 class MonthlyViewPage extends StatefulWidget {
@@ -335,17 +334,17 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
         backgroundColor: Theme.of(context).colorScheme.primary,
-        child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
+        child: Icon(Icons.add, color: Colors.white),
         onPressed: () async {
           // Uses the selected day from the calendar as the initial date
           final initialDate = _selectedDay ?? DateTime.now();
 
-          // Navigates to the AddExpensePage and waits for the new expense to be returned
-          final Expense? newExpense = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AddExpensePage(initialDate: initialDate),
-            ),
+          // Show AddExpensePage as a dialog instead of pushing a route
+          final Expense? newExpense = await showDialog<Expense>(
+            context: context,
+            barrierDismissible: false,
+            barrierColor: Colors.black.withOpacity(0.3),
+            builder: (_) => AddExpensePage(initialDate: initialDate),
           );
 
           if (newExpense != null) {
@@ -364,8 +363,6 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-
-      
     );
   }
 }
