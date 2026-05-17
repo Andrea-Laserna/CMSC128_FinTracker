@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'builders/designs/colors.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../database/db_helper.dart';
 import 'expense_model.dart';
@@ -6,7 +7,9 @@ import 'expense_model.dart';
 import '../pages/expenses/add/add_expense_page.dart';
 
 class MonthlyViewPage extends StatefulWidget {
-  const MonthlyViewPage({super.key});
+  final VoidCallback? onClose;
+
+  const MonthlyViewPage({super.key, this.onClose});
 
   @override
   State<MonthlyViewPage> createState() => _MonthlyViewPageState();
@@ -57,18 +60,8 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
 
   // Helper to map categories to specific colors
   Color _getMarkerColor(String category) {
-    switch (category.toLowerCase()) {
-      case 'transpo':
-        return Colors.blue.shade700;
-      case 'food':
-        return Colors.red.shade700;
-      case 'education':
-        return Colors.green.shade700;
-      case 'wants':
-        return Colors.purple.shade700;
-      default:
-        return Colors.blueGrey;
-    }
+    // Use primary theme color for calendar markers to match current theme
+    return Theme.of(context).colorScheme.primary;
   }
 
   Widget _buildSummaryCard(String title, String amount, Color bgColor) {
@@ -84,10 +77,10 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
-                color: Colors.black87,
+                color: colorNavy,
               ),
             ),
             const SizedBox(height: 5),
@@ -96,7 +89,7 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
-                color: Colors.grey[800],
+                color: colorBodyText,
               ),
             ),
           ],
@@ -131,14 +124,14 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
     }
 
     return Container(
-      color: const Color(0xFFECF3FA),
+      color: Colors.transparent,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.18),
+              color: iconColor.withOpacity(0.18),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -181,19 +174,19 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
     final selectedDayExpenses = _selectedDay != null ? _getExpensesForDay(_selectedDay!) : [];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: colorPageBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorPageBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
+        iconTheme: IconThemeData(color: colorNavy),
+        title: Text(
           'Monthly View',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(color: colorNavy, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.today, color: Colors.black),
+            icon: Icon(Icons.today, color: colorNavy),
             onPressed: () {
               setState(() {
                 _focusedDay = DateTime.now();
@@ -201,12 +194,17 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
               });
             },
           ),
+          if (widget.onClose != null)
+            IconButton(
+              icon: Icon(Icons.close, color: colorNavy),
+              onPressed: widget.onClose,
+            ),
         ],
       ),
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: colorPageBg,
             child: TableCalendar<Expense>(
               firstDay: DateTime.utc(2020, 1, 1),
               lastDay: DateTime.utc(2070, 12, 31),
@@ -214,16 +212,16 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
               selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
               eventLoader: _getExpensesForDay,
               
-              calendarStyle: const CalendarStyle(
+              calendarStyle: CalendarStyle(
                 selectedDecoration: BoxDecoration(
-                  color: Color.fromARGB(255, 157, 174, 204),
+                  color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
                 todayDecoration: BoxDecoration(
-                  color: Color.fromARGB(255, 220, 232, 245),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.18),
                   shape: BoxShape.circle,
                 ),
-                todayTextStyle: TextStyle(color: Colors.black),
+                todayTextStyle: TextStyle(color: colorNavy),
               ),
               headerStyle: const HeaderStyle(
                 formatButtonVisible: false,
@@ -249,7 +247,7 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
                               margin: const EdgeInsets.symmetric(horizontal: 1),
                               height: 7,
                               width: 7,
-                              decoration: BoxDecoration(
+                                decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: _getMarkerColor(expense.category),
                               ),
@@ -295,16 +293,16 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildSummaryCard(
-                  "This Month's Total",
-                  "₱${_getMonthlyTotal().toStringAsFixed(2)}",
-                  const Color(0xFFDCE8F5),
-                ),
+                      _buildSummaryCard(
+                        "This Month's Total",
+                        "₱${_getMonthlyTotal().toStringAsFixed(2)}",
+                        colorCardBg,
+                      ),
                 const SizedBox(width: 12),
                 _buildSummaryCard(
                   "Today's Total",
                   "₱${_getSelectedDayTotal().toStringAsFixed(2)}",
-                  const Color(0xFFEAEAF4),
+                  colorCardBg,
                 ),
               ],
             ),
@@ -336,8 +334,8 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
 
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
-        backgroundColor: const Color(0xFF5E6C85), 
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
         onPressed: () async {
           // Uses the selected day from the calendar as the initial date
           final initialDate = _selectedDay ?? DateTime.now();
