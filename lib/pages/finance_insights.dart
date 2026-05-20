@@ -15,7 +15,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // state
   List<Expense> _allExpenses = [];
   bool _initialLoading = true;
 
@@ -46,17 +45,13 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // analytcs
   Future<void> _runAnalysis(
     String key,
     AnalyticsResult Function(List<Expense>) compute,
   ) async {
     setState(() => _loadingStates[key] = true);
-
     await Future.delayed(const Duration(milliseconds: 350));
-
     final result = compute(_allExpenses);
-
     if (!mounted) return;
     setState(() => _loadingStates[key] = false);
     await AnalyticsBottomSheet.show(context, result);
@@ -80,14 +75,12 @@ class _ProfilePageState extends State<ProfilePage> {
     };
   }
 
- 
-
   @override
   Widget build(BuildContext context) {
     if (_initialLoading) {
       return Scaffold(
         backgroundColor: colorPageBg,
-        body: Center(child: CircularProgressIndicator()),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -117,7 +110,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-
       body: RefreshIndicator(
         onRefresh: _loadExpenses,
         color: colorNavy,
@@ -127,11 +119,8 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // header card with quick stats
               _HeaderCard(stats: stats, score: score),
               const SizedBox(height: 20),
-
-              // section label
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 10),
                 child: Text(
@@ -144,7 +133,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              // action buttons
               AnalyticsActionButton(
                 label: 'Analyze My Spending',
                 icon: Icons.bar_chart_rounded,
@@ -185,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 accentColor: Theme.of(context).colorScheme.primary,
                 onTap: () => _runAnalysis('trends', _service.analyzeSpendingTrends),
               ),
-              const SizedBox(height: 20), 
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -229,34 +217,58 @@ class _HeaderCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: colorNavy,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Month label + health badge
+          // ── Row 1: "May 2026  •  Fair"  |  "Health score" ──
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                '${_monthName(now.month)} ${now.year}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.white54,
-                  fontWeight: FontWeight.w500,
+              // Left: date + badge inline
+              Expanded(
+                child: Row(
+                  children: [
+                    Text(
+                      '${_monthName(now.month)} ${now.year}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.white54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (score > 0) ...[
+                      const SizedBox(width: 8),
+                      _HealthBadge(label: _scoreLabel(), color: _scoreColor()),
+                    ],
+                  ],
                 ),
               ),
+              // Right: "Health score" label aligned above the ring
               if (score > 0)
-                _HealthBadge(label: _scoreLabel(), color: _scoreColor()),
+                SizedBox(
+                  width: 76,
+                  child: Text(
+                    'Health score',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white38,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
             ],
           ),
+
           const SizedBox(height: 10),
 
-          // Main row: spend info + score ring
+          // ── Row 2: amount  |  score ring ──
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Left: spend amount + chips
+              // Left: amount + subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,38 +280,47 @@ class _HeaderCard extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
                         letterSpacing: -0.5,
+                        height: 1,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     const Text(
                       'Spent this month',
                       style: TextStyle(fontSize: 13, color: Colors.white54),
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        _StatChip(
-                          icon: Icons.receipt_long_rounded,
-                          label: '$count transactions',
-                        ),
-                        const SizedBox(width: 8),
-                        if (topCat != '—')
-                          _StatChip(
-                            icon: Icons.trending_up_rounded,
-                            label:
-                                'Top: ${topCat[0].toUpperCase()}${topCat.substring(1)}',
-                          ),
-                      ],
-                    ),
                   ],
                 ),
               ),
+              // Right: ring (no label here, label is in row 1)
+              if (score > 0)
+                _ScoreRingNoLabel(score: score, color: _scoreColor()),
+            ],
+          ),
 
-              // Right: score ring
-              if (score > 0) ...[
-                const SizedBox(width: 16),
-                _ScoreRing(score: score, color: _scoreColor()),
-              ],
+          // ── Divider ──
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Divider(
+              color: Colors.white.withOpacity(0.08),
+              height: 1,
+              thickness: 1,
+            ),
+          ),
+
+          // ── Chips ──
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _StatChip(
+                icon: Icons.receipt_long_rounded,
+                label: '$count transactions',
+              ),
+              if (topCat != '—')
+                _StatChip(
+                  icon: Icons.trending_up_rounded,
+                  label: 'Top: ${topCat[0].toUpperCase()}${topCat.substring(1)}',
+                ),
             ],
           ),
         ],
@@ -308,6 +329,47 @@ class _HeaderCard extends StatelessWidget {
   }
 }
 
+// Ring WITHOUT the "Health score" label (label is now in the header row)
+class _ScoreRingNoLabel extends StatelessWidget {
+  final double score;
+  final Color color;
+
+  const _ScoreRingNoLabel({required this.score, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 76,
+      height: 76,
+      child: CustomPaint(
+        painter: _RingPainter(score: score, color: color),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                score.toStringAsFixed(0),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  height: 1,
+                ),
+              ),
+              const Text(
+                '/ 100',
+                style: TextStyle(
+                  fontSize: 9,
+                  color: Colors.white38,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _ScoreRing extends StatelessWidget {
   final double score;
@@ -376,14 +438,12 @@ class _RingPainter extends CustomPainter {
     final radius = (size.width / 2) - 6;
     const strokeWidth = 7.0;
 
-    // Track
     final trackPaint = Paint()
       ..color = Colors.white.withOpacity(0.10)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth;
     canvas.drawCircle(center, radius, trackPaint);
 
-    // Arc
     final arcPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
