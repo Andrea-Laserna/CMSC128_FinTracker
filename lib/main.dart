@@ -108,17 +108,17 @@ class _MyAppState extends State<MyApp> {
 }
 
 Future<bool> _shouldShowLanding() async {
-  // final prefs = await SharedPreferences.getInstance();
-  // final onboardingComplete = prefs.getBool('hasCompletedOnboarding');
-  // if (onboardingComplete != null) {
-  //   return !onboardingComplete;
-  // }
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingComplete = prefs.getBool('hasCompletedOnboarding');
+  if (onboardingComplete != null) {
+    return !onboardingComplete;
+  }
 
-  // // Backward compatibility with older app versions that only used `isFirstTime`.
-  // final isFirstTime = prefs.getBool('isFirstTime');
-  // if (isFirstTime != null) {
-  //   return isFirstTime;
-  // }
+  // Backward compatibility with older app versions that only used `isFirstTime`.
+  final isFirstTime = prefs.getBool('isFirstTime');
+  if (isFirstTime != null) {
+    return isFirstTime;
+  }
 
   // Default to showing landing if no onboarding state has ever been stored.
   return true;
