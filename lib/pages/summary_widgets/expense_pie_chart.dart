@@ -20,7 +20,7 @@ class ExpensePieChart extends StatelessWidget {
           color: const Color.fromARGB(255, 54, 59, 72),
           value: 100,
           title: '',
-          radius: 86,
+          radius: 78,
         ),
       ];
     }
@@ -32,7 +32,7 @@ class ExpensePieChart extends StatelessWidget {
         color: category.color,
         value: category.amount,
         title: percentage < 5 ? '' : '${percentage.toStringAsFixed(0)}%',
-        radius: 86,
+        radius: 78,
         titleStyle: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w800,
@@ -46,21 +46,21 @@ class ExpensePieChart extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: SizedBox(
-        height: 300,
-        width: 300,
+        height: 260,
+        width: 260,
         child: Stack(
           alignment: Alignment.center,
           children: [
             PieChart(
               PieChartData(
                 sections: _sections(),
-                centerSpaceRadius: 72,
+                centerSpaceRadius: 64,
                 sectionsSpace: 2,
                 borderData: FlBorderData(show: false),
               ),
             ),
             SizedBox(
-              width: 135,
+              width: 120,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

@@ -1,5 +1,4 @@
 import 'package:fins/pages/builders/widgets/profile_and_settings/theme_selector_popup.dart';
-import 'package:fins/themes/constants/app_theme_type.dart';
 import 'package:fins/themes/logic/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:fins/themes/logic/app_themes.dart';

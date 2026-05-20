@@ -44,15 +44,15 @@ class DayPage extends StatelessWidget {
       children: [
         // Summary cards row
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: SummaryCard(
-                  title: budgetMode == 'monthly'
-                      ? 'Spent This Month'
-                      : 'Spent This Week',
+                    title: budgetMode == 'monthly'
+                      ? 'Monthly Total'
+                      : 'Weekly Total',
                   amount: budgetMode == 'monthly'
                       ? '₱${monthlySpent.toStringAsFixed(2)}'
                       : '₱${calculateWeeklySpent(allExpenses, weekDates).toStringAsFixed(2)}',
@@ -63,20 +63,11 @@ class DayPage extends StatelessWidget {
                 child: GestureDetector(
                   onTap: onSummaryTap,
                   child: SummaryCard(
-                    title: 'Left to Spend',
+                    title: 'Remaining Funds',
                     amount: budgetMode == 'monthly'
                         ? '₱${(userBudget - monthlySpent).toStringAsFixed(2)}'
                         : getBalanceLeft(allExpenses, weekDates, userBudget),
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: SummaryCard(
-                  title: 'Savings',
-                  amount: budgetMode == 'monthly'
-                      ? '₱${(userBudget - monthlySpent < 0 ? 0 : userBudget - monthlySpent).toStringAsFixed(2)}'
-                      : getSavings(allExpenses, weekDates, userBudget),
                 ),
               ),
             ],
@@ -117,7 +108,7 @@ class DayPage extends StatelessWidget {
               : ListView.separated(
                   padding: const EdgeInsets.only(bottom: 80),
                   itemCount: dayExpenses.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final item = dayExpenses[index];
                     final realIndex = allExpenses.indexOf(item);
