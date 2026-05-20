@@ -30,6 +30,79 @@ class _AddExpensePageState extends State<AddExpensePage> {
   late DateTime selectedDate;
   bool isProcessing = false;
 
+  final Map<String, List<String>> categoryKeywords = {
+    'food': [
+      'jollibee',
+      'mcdo',
+      'mcdonald',
+      'burger',
+      'coffee',
+      'milk tea',
+      'restaurant',
+      'lunch',
+      'dinner',
+      'breakfast',
+      'snack',
+      'food',
+      'pizza',
+    ],
+
+    'transport': [
+      'grab',
+      'taxi',
+      'jeep',
+      'bus',
+      'fare',
+      'gas',
+      'fuel',
+      'parking',
+      'transport',
+    ],
+
+    'shopping': [
+      'clothes',
+      'shoes',
+      'mall',
+      'shop',
+      'shopping',
+      'lazada',
+      'shopee',
+    ],
+
+    'entertainment': [
+      'netflix',
+      'spotify',
+      'movie',
+      'game',
+      'concert',
+      'subscription',
+    ],
+
+    'bills': [
+      'electric',
+      'water',
+      'internet',
+      'wifi',
+      'rent',
+      'bill',
+    ],
+  };
+
+  void suggestCategory(String input) {
+    final lowerInput = input.toLowerCase();
+
+    for (final entry in categoryKeywords.entries) {
+      for (final keyword in entry.value) {
+        if (lowerInput.contains(keyword)) {
+          setState(() {
+            category = entry.key;
+          });
+          return;
+        }
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -169,7 +242,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
                             buildTextInput(
                               hint: 'Enter description here',
                               controller: _nameController,  
-                              onChanged: (v) => name = v,
+                              onChanged: (v) {
+                                name = v;
+                                suggestCategory(v);
+                              },
                               validator: (v) => v == null || v.isEmpty
                                   ? 'Enter a name'
                                   : null,
