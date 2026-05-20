@@ -15,11 +15,13 @@ class ExpenseAggregator {
   }
 
   double total(List<Expense> expenses) =>
-      expenses.fold(0.0, (sum, e) => sum + e.amount);
+      expenses
+        .where((e) => e.amount > 0)
+        .fold(0.0, (sum, e) => sum + e.amount);
 
   Map<String, double> totalsByCategory(List<Expense> expenses) {
     final result = <String, double>{};
-    for (final e in expenses) {
+    for (final e in expenses.where((e) => e.amount > 0)) {
       result.update(
         e.category.toLowerCase(),
         (v) => v + e.amount,
@@ -31,7 +33,7 @@ class ExpenseAggregator {
 
   Map<int, double> totalsByDayOfWeek(List<Expense> expenses) {
     final byDay = <int, double>{};
-    for (final e in expenses) {
+    for (final e in expenses.where((e) => e.amount > 0)) {
       byDay.update(e.date.weekday, (v) => v + e.amount,
           ifAbsent: () => e.amount);
     }
@@ -70,7 +72,10 @@ class ExpenseAggregator {
               .clamp(startDay, daysInMonth);
 
       final weekExpenses =
-          expenses.where((e) => e.date.day >= startDay && e.date.day <= endDay).toList();
+          expenses
+            .where((e) => e.amount > 0)
+            .where((e) => e.date.day >= startDay && e.date.day <= endDay)
+            .toList();
 
       weeks.add({
         'startDay': startDay,
@@ -85,7 +90,7 @@ class ExpenseAggregator {
 
   List<Map<String, dynamic>> detectRecurring(List<Expense> expenses) {
     final grouped = <String, List<Expense>>{};
-    for (final e in expenses) {
+    for (final e in expenses.where((e) => e.amount > 0)) {
       grouped.putIfAbsent(e.name.toLowerCase().trim(), () => []).add(e);
     }
     return grouped.entries
@@ -100,8 +105,9 @@ class ExpenseAggregator {
   }
 
   Expense? topExpense(List<Expense> expenses) {
-    if (expenses.isEmpty) return null;
-    return expenses.reduce((a, b) => a.amount > b.amount ? a : b);
+    final filtered = expenses.where((e) => e.amount > 0).toList();
+    if (filtered.isEmpty) return null;
+    return filtered.reduce((a, b) => a.amount > b.amount ? a : b);
   }
 
   Map<String, dynamic>? topCategory(List<Expense> expenses) {

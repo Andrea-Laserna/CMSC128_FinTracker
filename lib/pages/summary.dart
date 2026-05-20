@@ -252,7 +252,7 @@ class _SummaryPageState extends State<SummaryPage> {
                       padding: const EdgeInsets.symmetric(vertical: 20),
                       child: ExpensePieChart(
                         categories: summary.chartCategories,
-                        total: summary.total,
+                               total: summary.chartTotal,
                       ),
                     )
                   else
@@ -269,14 +269,14 @@ class _SummaryPageState extends State<SummaryPage> {
 
                   const SizedBox(height: 16),
                   ComparisonChip(
-                    currentTotal: summary.total,
-                    previousTotal: summary.previousTotal,
+                    currentTotal: summary.expenseTotal,
+                    previousTotal: summary.previousExpenseTotal,
                     summaryMode: _summaryMode,
                   ),
                   const SizedBox(height: 14),
                   ExpenseLegend(
                     categories: summary.categories,
-                    total: summary.total,
+                           total: summary.chartTotal,
                   ),
                   const SizedBox(height: 18),
                   PeriodDropdown(

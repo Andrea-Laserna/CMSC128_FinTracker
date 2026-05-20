@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage>
     final now = DateTime.now();
     
     return HomePage.expenses
-        .where((e) => e.date.month == now.month && e.date.year == now.year)
+      .where((e) => e.date.month == now.month && e.date.year == now.year)
         .fold(0.0, (sum, e) => sum + e.amount); 
   }
 

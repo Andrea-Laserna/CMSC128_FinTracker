@@ -29,6 +29,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
   String customCategory = '';
   late DateTime selectedDate;
   bool isProcessing = false;
+  bool _isCashIn = false;
 
   @override
   void initState() {
@@ -92,6 +93,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
     }
   }
 
+  void _toggleCashInMode() {
+    setState(() => _isCashIn = !_isCashIn);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -131,13 +136,25 @@ class _AddExpensePageState extends State<AddExpensePage> {
                           children: [
                             Expanded(
                               child: Text(
-                                'Add a new expense',
+                                _isCashIn ? 'Add cash in' : 'Add a new expense',
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
                                   color: colorNavy,
                                   letterSpacing: -0.5,
                                 ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: _toggleCashInMode,
+                              tooltip: _isCashIn
+                                  ? 'Switch to expense'
+                                  : 'Switch to cash in',
+                              icon: Icon(
+                                Icons.swap_horiz_rounded,
+                                color: _isCashIn
+                                    ? Colors.green.shade600
+                                    : colorNavy,
                               ),
                             ),
                             IconButton(
@@ -205,40 +222,42 @@ class _AddExpensePageState extends State<AddExpensePage> {
 
                             const SizedBox(height: 14),
 
-                            // Category
-                            buildLabel('Category'),
-                            buildExpenseCategoryDropdown(
-                              value: category,
-                              onChanged: (v) {
-                                if (v != null) {
-                                  setState(() {
-                                    category = v;
+                            if (!_isCashIn) ...[
+                              // Category
+                              buildLabel('Category'),
+                              buildExpenseCategoryDropdown(
+                                value: category,
+                                onChanged: (v) {
+                                  if (v != null) {
+                                    setState(() {
+                                      category = v;
 
-                                    if (category != 'custom') {
-                                      customCategory = '';
-                                    }
-                                  });
-                                }
-                              },
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            if (category == 'custom') ...[
-                              buildLabel('Custom Category'),
-                              buildTextInput(
-                                hint: 'Enter custom category',
-                                onChanged: (v) => customCategory = v,
-                                validator: (v) {
-                                  if (category == 'custom' &&
-                                      (v == null || v.trim().isEmpty)) {
-                                    return 'Enter a custom category';
+                                      if (category != 'custom') {
+                                        customCategory = '';
+                                      }
+                                    });
                                   }
-
-                                  return null;
                                 },
                               ),
+
                               const SizedBox(height: 14),
+
+                              if (category == 'custom') ...[
+                                buildLabel('Custom Category'),
+                                buildTextInput(
+                                  hint: 'Enter custom category',
+                                  onChanged: (v) => customCategory = v,
+                                  validator: (v) {
+                                    if (category == 'custom' &&
+                                        (v == null || v.trim().isEmpty)) {
+                                      return 'Enter a custom category';
+                                    }
+
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 14),
+                              ],
                             ],
 
                             // Date Spent
@@ -287,13 +306,18 @@ class _AddExpensePageState extends State<AddExpensePage> {
                               child: ElevatedButton(
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
-                                    final categoryToSave = category == 'custom'
-                                        ? customCategory
-                                        : category;
-
+                                    final categoryToSave = _isCashIn
+                                        ? 'cash_in'
+                                        : category == 'custom'
+                                            ? customCategory
+                                            : category;
+                                    final parsedAmount =
+                                        double.parse(amount.trim()).abs();
+                                    final finalAmount =
+                                        _isCashIn ? -parsedAmount : parsedAmount;
                                     final newExpense = Expense(
                                       name: name.trim(),
-                                      amount: double.parse(amount.trim()),
+                                      amount: finalAmount,
                                       category: categoryToSave,
                                       date: selectedDate,
                                       details: details,
@@ -310,8 +334,8 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Add Expense',
+                                child: Text(
+                                  _isCashIn ? 'Add Cash In' : 'Add Expense',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,

@@ -65,7 +65,7 @@ class ExpensePieChart extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Total:',
+                    'Total Expenses:',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

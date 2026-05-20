@@ -15,8 +15,13 @@ class TransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     IconData icon;
     Color iconColor;
+    final isCashIn = item.amount < 0;
 
     switch (item.category) {
+      case 'cash_in':
+        icon = Icons.call_received;
+        iconColor = Colors.green.shade700;
+        break;
       case 'transpo':
         icon = Icons.directions_car_filled;
         iconColor = Colors.blue.shade700;
@@ -36,6 +41,11 @@ class TransactionItem extends StatelessWidget {
       default:
         icon = Icons.attach_money;
         iconColor = Colors.black;
+    }
+
+    if (isCashIn) {
+      icon = Icons.call_received;
+      iconColor = Colors.green.shade700;
     }
 
     return Container(
@@ -69,7 +79,7 @@ class TransactionItem extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  item.category.toUpperCase(),
+                  isCashIn ? 'CASH IN' : item.category.toUpperCase(),
                   style: TextStyle(color: Colors.blueGrey[300], fontSize: 10),
                 ),
               ],
@@ -77,11 +87,11 @@ class TransactionItem extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            '-₱${item.amount.toStringAsFixed(2)}',
-            style: const TextStyle(
+            '${isCashIn ? '+' : '-'}₱${item.amount.abs().toStringAsFixed(2)}',
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: Colors.redAccent,
+              color: isCashIn ? Colors.green.shade700 : Colors.redAccent,
             ),
           ),
         ],
