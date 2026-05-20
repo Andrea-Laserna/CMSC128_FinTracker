@@ -121,18 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               _HeaderCard(stats: stats, score: score),
               const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 10),
-                child: Text(
-                  'Choose an Analysis',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: colorBodyText.withOpacity(0.8),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
+
               AnalyticsActionButton(
                 label: 'Analyze My Spending',
                 icon: Icons.bar_chart_rounded,
@@ -214,19 +203,19 @@ class _HeaderCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
         color: colorNavy,
         borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Row 1: "May 2026  •  Fair"  |  "Health score" ──
+          // ── Row 1: date + badge (left)  |  "Health score" label (right) ──
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Left: date + badge inline
               Expanded(
                 child: Row(
                   children: [
@@ -245,15 +234,14 @@ class _HeaderCard extends StatelessWidget {
                   ],
                 ),
               ),
-              // Right: "Health score" label aligned above the ring
               if (score > 0)
-                SizedBox(
-                  width: 76,
+                const SizedBox(
+                  width: 62,
                   child: Text(
                     'Health score',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 11,
+                    style: TextStyle(
+                      fontSize: 10,
                       color: Colors.white38,
                       fontWeight: FontWeight.w500,
                     ),
@@ -262,44 +250,43 @@ class _HeaderCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
-          // ── Row 2: amount  |  score ring ──
+          // ── Row 2: amount (left)  |  ring (right, smaller) ──
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Left: amount + subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       '₱${total.toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontSize: 34,
+                        fontSize: 32,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
                         letterSpacing: -0.5,
                         height: 1,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     const Text(
                       'Spent this month',
-                      style: TextStyle(fontSize: 13, color: Colors.white54),
+                      style: TextStyle(fontSize: 12, color: Colors.white54),
                     ),
                   ],
                 ),
               ),
-              // Right: ring (no label here, label is in row 1)
               if (score > 0)
-                _ScoreRingNoLabel(score: score, color: _scoreColor()),
+                _ScoreRingCompact(score: score, color: _scoreColor()),
             ],
           ),
 
           // ── Divider ──
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12),
             child: Divider(
               color: Colors.white.withOpacity(0.08),
               height: 1,
@@ -329,18 +316,18 @@ class _HeaderCard extends StatelessWidget {
   }
 }
 
-// Ring WITHOUT the "Health score" label (label is now in the header row)
-class _ScoreRingNoLabel extends StatelessWidget {
+// Compact ring — 62px instead of 76px, no label (label moved to row 1)
+class _ScoreRingCompact extends StatelessWidget {
   final double score;
   final Color color;
 
-  const _ScoreRingNoLabel({required this.score, required this.color});
+  const _ScoreRingCompact({required this.score, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 76,
-      height: 76,
+      width: 62,
+      height: 62,
       child: CustomPaint(
         painter: _RingPainter(score: score, color: color),
         child: Center(
@@ -350,7 +337,7 @@ class _ScoreRingNoLabel extends StatelessWidget {
               Text(
                 score.toStringAsFixed(0),
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
                   height: 1,
@@ -358,10 +345,7 @@ class _ScoreRingNoLabel extends StatelessWidget {
               ),
               const Text(
                 '/ 100',
-                style: TextStyle(
-                  fontSize: 9,
-                  color: Colors.white38,
-                ),
+                style: TextStyle(fontSize: 8, color: Colors.white38),
               ),
             ],
           ),
@@ -402,10 +386,7 @@ class _ScoreRing extends StatelessWidget {
                   ),
                   const Text(
                     '/ 100',
-                    style: TextStyle(
-                      fontSize: 9,
-                      color: Colors.white38,
-                    ),
+                    style: TextStyle(fontSize: 9, color: Colors.white38),
                   ),
                 ],
               ),
@@ -435,8 +416,8 @@ class _RingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width / 2) - 6;
-    const strokeWidth = 7.0;
+    final radius = (size.width / 2) - 5;
+    const strokeWidth = 6.0;
 
     final trackPaint = Paint()
       ..color = Colors.white.withOpacity(0.10)
@@ -507,7 +488,7 @@ class _StatChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.10),
         borderRadius: BorderRadius.circular(20),
@@ -515,13 +496,13 @@ class _StatChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white70, size: 13),
-          const SizedBox(width: 5),
+          Icon(icon, color: Colors.white70, size: 11),
+          const SizedBox(width: 4),
           Text(
             label,
             style: const TextStyle(
               color: Colors.white70,
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
           ),
