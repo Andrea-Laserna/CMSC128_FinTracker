@@ -3,7 +3,6 @@ import 'builders/designs/colors.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../database/db_helper.dart';
 import 'expense_model.dart';
-import '../pages/expenses/add/add_expense_page.dart';
 
 class MonthlyViewPage extends StatefulWidget {
   final VoidCallback? onClose;
@@ -48,7 +47,8 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
 
   double _getSelectedDayTotal() {
     if (_selectedDay == null) return 0.0;
-    return _getExpensesForDay(_selectedDay!).fold(0.0, (sum, e) => sum + e.amount);
+    return _getExpensesForDay(_selectedDay!)
+        .fold(0.0, (sum, e) => sum + e.amount);
   }
 
   // Dot markers to show that there are expenses on the given day
@@ -103,7 +103,12 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
   Widget _buildTransactionItem(Expense item) {
     IconData icon;
     Color iconColor;
+    final isCashIn = item.amount < 0;
     switch (item.category.toLowerCase()) {
+      case 'cash_in':
+        icon = Icons.call_received;
+        iconColor = Colors.green.shade700;
+        break;
       case 'transpo':
         icon = Icons.directions_car_filled;
         iconColor = Colors.blue.shade700;
@@ -123,6 +128,11 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
       default:
         icon = Icons.attach_money;
         iconColor = Colors.black;
+    }
+
+    if (isCashIn) {
+      icon = Icons.call_received;
+      iconColor = Colors.green.shade700;
     }
 
     return Container(
@@ -151,7 +161,7 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
                   ),
                 ),
                 Text(
-                  item.category.toUpperCase(),
+                  isCashIn ? 'CASH IN' : item.category.toUpperCase(),
                   style: TextStyle(color: Colors.blueGrey[300], fontSize: 10),
                 ),
               ],
@@ -159,11 +169,11 @@ class _MonthlyViewPageState extends State<MonthlyViewPage> {
           ),
           const Spacer(),
           Text(
-            "-₱${item.amount.toStringAsFixed(2)}",
-            style: const TextStyle(
+            "${isCashIn ? '+' : '-'}₱${item.amount.abs().toStringAsFixed(2)}",
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
-              color: Colors.redAccent,
+              color: isCashIn ? Colors.green.shade700 : Colors.redAccent,
             ),
           ),
         ],

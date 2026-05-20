@@ -23,6 +23,7 @@ class _EditExpensePageState extends State<EditExpensePage> {
   late String customCategory;
   late String details;
   late DateTime selectedDate; 
+  bool _isCashIn = false;
 
   late TextEditingController _nameController;
   late TextEditingController _amountController;
@@ -38,13 +39,17 @@ class _EditExpensePageState extends State<EditExpensePage> {
   void initState() {
     super.initState();
     name         = widget.expense.name;
-    amountText   = widget.expense.amount.toStringAsFixed(2);
+    amountText   = widget.expense.amount.abs().toStringAsFixed(2);
     category     = widget.expense.category;
     details      = widget.expense.details;
     selectedDate = widget.expense.date;
 
     final savedCategory = widget.expense.category;
-    if (_knownCategories.contains(savedCategory)) {
+    if (savedCategory == 'cash_in') {
+      _isCashIn = true;
+      category = 'cash_in';
+      customCategory = '';
+    } else if (_knownCategories.contains(savedCategory)) {
       category       = savedCategory;
       customCategory = '';
     } else {
@@ -72,11 +77,19 @@ class _EditExpensePageState extends State<EditExpensePage> {
       final double? amount = double.tryParse(_amountController.text.trim());
       if (amount == null || amount <= 0) return;
 
+      final parsedAmount = amount.abs();
+      final finalAmount = _isCashIn ? -parsedAmount : parsedAmount;
+      final categoryToSave = _isCashIn
+          ? 'cash_in'
+          : category == 'custom'
+              ? customCategory.trim()
+              : category;
+
       final updated = Expense(
         id:       widget.expense.id,
         name:     _nameController.text.trim(),
-        amount:   amount,
-        category: category == 'custom' ? customCategory.trim() : category,
+        amount:   finalAmount,
+        category: categoryToSave,
         date:     selectedDate,
         details:  _detailsController.text.trim(),
       );
@@ -128,7 +141,7 @@ class _EditExpensePageState extends State<EditExpensePage> {
                           children: [
                             Expanded(
                               child: Text(
-                                'Edit expense',
+                                _isCashIn ? 'Edit cash in' : 'Edit expense',
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
@@ -205,42 +218,44 @@ class _EditExpensePageState extends State<EditExpensePage> {
 
                                 const SizedBox(height: 14),
 
-                                // Category
-                                buildLabel('Category'),
-                                buildExpenseCategoryDropdown(
-                                  value: category,
-                                  onChanged: (v) {
-                                    if (v != null) {
-                                      setState(() {
-                                        category = v;
+                                if (!_isCashIn) ...[
+                                  // Category
+                                  buildLabel('Category'),
+                                  buildExpenseCategoryDropdown(
+                                    value: category,
+                                    onChanged: (v) {
+                                      if (v != null) {
+                                        setState(() {
+                                          category = v;
 
-                                        if (category != 'custom') {
-                                          customCategory = '';
-                                          _customCategoryController.clear();
-                                        }
-                                      });
-                                    }
-                                  },
-                                ),
-
-                                const SizedBox(height: 14),
-
-                                if (category == 'custom') ...[
-                                  buildLabel('Custom Category'),
-                                  buildTextInput(
-                                    controller: _customCategoryController,
-                                    hint: 'Enter custom category',
-                                    onChanged: (v) => customCategory = v,
-                                    validator: (v) {
-                                      if (category == 'custom' &&
-                                          (v == null || v.trim().isEmpty)) {
-                                        return 'Enter a custom category';
+                                          if (category != 'custom') {
+                                            customCategory = '';
+                                            _customCategoryController.clear();
+                                          }
+                                        });
                                       }
-
-                                      return null;
                                     },
                                   ),
+
                                   const SizedBox(height: 14),
+
+                                  if (category == 'custom') ...[
+                                    buildLabel('Custom Category'),
+                                    buildTextInput(
+                                      controller: _customCategoryController,
+                                      hint: 'Enter custom category',
+                                      onChanged: (v) => customCategory = v,
+                                      validator: (v) {
+                                        if (category == 'custom' &&
+                                            (v == null || v.trim().isEmpty)) {
+                                          return 'Enter a custom category';
+                                        }
+
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 14),
+                                  ],
                                 ],
 
                                 // Date Spent

@@ -20,6 +20,9 @@ class ExpenseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCashIn = title.toLowerCase() == 'cash_in';
+    final displayTitle = isCashIn ? 'Cash In' : CategoryStyle.capitalize(title);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -44,7 +47,7 @@ class ExpenseTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  CategoryStyle.capitalize(title),
+                  displayTitle,
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
@@ -63,11 +66,11 @@ class ExpenseTile extends StatelessWidget {
             ),
           ),
           Text(
-            '₱${amount.toStringAsFixed(2)}',
+            '${isCashIn ? '+' : '-'}₱${amount.toStringAsFixed(2)}',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: colorNavy,
+              color: isCashIn ? Colors.green.shade700 : colorNavy,
             ),
           ),
         ],

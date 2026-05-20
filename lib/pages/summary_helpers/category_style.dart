@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 class CategoryStyle {
   static String capitalize(String text) {
     if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1);
+    final parts = text.split('_');
+    return parts
+        .map((part) => part.isEmpty
+            ? part
+            : part[0].toUpperCase() + part.substring(1))
+        .join(' ');
   }
 
   static Color getColor(String category) {
@@ -18,6 +23,8 @@ class CategoryStyle {
         return const Color(0xFF8AD99A);
       case 'bill':
         return const Color.fromARGB(255, 117, 197, 213);
+      case 'cash_in':
+        return const Color(0xFF65C18C);
       case 'custom':
         return const Color.fromARGB(255, 187, 107, 227);
       default:
@@ -37,6 +44,8 @@ class CategoryStyle {
         return Icons.local_grocery_store;
       case 'bill':
         return Icons.receipt;
+      case 'cash_in':
+        return Icons.call_received;
       case 'custom':
         return Icons.shopping_cart;
       default:

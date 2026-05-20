@@ -54,7 +54,7 @@ class _HealthScoreRingState extends State<HealthScoreRing>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animation,
-      builder: (_, __) {
+      builder: (_, _) {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [

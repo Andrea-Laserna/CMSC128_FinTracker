@@ -134,10 +134,13 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                               ),
                             ),
                           ),
-                          Image.asset(
-                            'assets/images/fin.png',
-                            height: isSmallScreen ? 220 : 250,
-                            fit: BoxFit.contain,
+                          Transform.translate(
+                            offset: Offset(0, isSmallScreen ? -40 : -40),
+                            child: Image.asset(
+                              'assets/images/fin.png',
+                              height: isSmallScreen ? 220 : 250,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ],
                       ),

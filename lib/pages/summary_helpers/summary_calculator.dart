@@ -26,6 +26,7 @@ class SummaryCalculator {
     DateTime end,
   ) {
     return expensesInRange(expenses, start, end)
+        .where((expense) => expense.amount > 0)
         .fold(0.0, (sum, expense) => sum + expense.amount);
   }
 
@@ -38,16 +39,27 @@ class SummaryCalculator {
   }) {
     final periodExpenses = expensesInRange(expenses, start, end);
     final total = periodExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
-    final previousTotal = totalForRange(expenses, previousStart, previousEnd);
+    final expenseOnly = periodExpenses
+        .where((expense) => expense.amount > 0)
+        .toList();
+    final expenseTotal = expenseOnly.fold(0.0, (sum, expense) => sum + expense.amount);
+    final previousExpenses = expensesInRange(expenses, previousStart, previousEnd);
+    final previousTotal = previousExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
+    final previousExpenseTotal = previousExpenses
+      .where((expense) => expense.amount > 0)
+      .fold(0.0, (sum, expense) => sum + expense.amount);
 
     final Map<String, double> categoryTotals = {};
-    for (final expense in periodExpenses) {
+    for (final expense in expenseOnly) {
       categoryTotals.update(
         expense.category,
         (value) => value + expense.amount,
         ifAbsent: () => expense.amount,
       );
     }
+
+    final chartTotal = categoryTotals.values
+        .fold(0.0, (sum, value) => sum + value);
 
     final categories = categoryTotals.entries.map((entry) {
       return CategorySummary(
@@ -64,7 +76,10 @@ class SummaryCalculator {
 
     return SummaryData(
       total: total,
+      expenseTotal: expenseTotal,
+      previousExpenseTotal: previousExpenseTotal,
       previousTotal: previousTotal,
+      chartTotal: chartTotal,
       categories: categories,
       chartCategories: chartCategories,
       periodExpenses: periodExpenses,

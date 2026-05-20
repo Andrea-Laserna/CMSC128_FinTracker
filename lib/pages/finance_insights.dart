@@ -62,7 +62,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final thisMonth = _allExpenses
         .where((e) => e.date.year == now.year && e.date.month == now.month)
         .toList();
-    final double total = thisMonth.fold(0.0, (s, e) => s + e.amount);
+    final double total = thisMonth
+      .where((e) => e.amount > 0)
+      .fold(0.0, (s, e) => s + e.amount);
     final double score = _allExpenses.isEmpty
         ? 0
         : _service.calculateFinancialHealthScore(_allExpenses);

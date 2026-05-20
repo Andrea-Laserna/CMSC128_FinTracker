@@ -136,6 +136,42 @@ class _SummaryPageState extends State<SummaryPage> {
     });
   }
 
+  Widget _buildSavingsCard(double amount) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: colorCardBg,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Savings',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              color: colorNavy,
+            ),
+          ),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '₱${amount.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+                color: colorBodyText,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -153,6 +189,10 @@ class _SummaryPageState extends State<SummaryPage> {
     );
 
     final isDataEmpty = summary.chartCategories.isEmpty;
+    // (monthly budget/days in month) x days in week
+    final savings = (_periodBudget - summary.total) < 0
+      ? 0.0
+      : (_periodBudget - summary.total).toDouble();
 
     return Scaffold(
       backgroundColor: colorPageBg,
@@ -193,36 +233,50 @@ class _SummaryPageState extends State<SummaryPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  ChartModeToggle(
-                    selectedMode: _chartMode,
-                    onChanged: (mode) => setState(() => _chartMode = mode),
+                  Row(
+                    children: [
+                      Expanded(child: _buildSavingsCard(savings)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ChartModeToggle(
+                          selectedMode: _chartMode,
+                          onChanged: (mode) => setState(() => _chartMode = mode),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 10),
 
                   if (_chartMode == ChartMode.pie)
-                    ExpensePieChart(
-                      categories: summary.chartCategories,
-                      total: summary.total,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: ExpensePieChart(
+                        categories: summary.chartCategories,
+                               total: summary.chartTotal,
+                      ),
                     )
                   else
-                    ExpenseBarChart(
-                      expenses: _expenses,
-                      start: summary.start,
-                      end: summary.end,
-                      periodBudget: _periodBudget,
-                      summaryMode: _summaryMode,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: ExpenseBarChart(
+                        expenses: _expenses,
+                        start: summary.start,
+                        end: summary.end,
+                        periodBudget: _periodBudget,
+                        summaryMode: _summaryMode,
+                      ),
                     ),
 
                   const SizedBox(height: 16),
                   ComparisonChip(
-                    currentTotal: summary.total,
-                    previousTotal: summary.previousTotal,
+                    currentTotal: summary.expenseTotal,
+                    previousTotal: summary.previousExpenseTotal,
                     summaryMode: _summaryMode,
                   ),
                   const SizedBox(height: 14),
                   ExpenseLegend(
                     categories: summary.categories,
-                    total: summary.total,
+                           total: summary.chartTotal,
                   ),
                   const SizedBox(height: 18),
                   PeriodDropdown(

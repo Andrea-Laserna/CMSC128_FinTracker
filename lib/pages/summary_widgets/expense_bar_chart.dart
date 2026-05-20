@@ -36,13 +36,14 @@ class ExpenseBarChart extends StatelessWidget {
         final expenseDate = SummaryDateUtils.cleanDate(expense.date);
         return SummaryDateUtils.isSameDate(expenseDate, day);
       });
-      return dayExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
+      return dayExpenses
+          .where((expense) => expense.amount > 0)
+          .fold(0.0, (sum, expense) => sum + expense.amount);
     }).toList();
 
     final maxDailyTotal = dailyTotals.isEmpty
         ? 0.0
         : dailyTotals.reduce((a, b) => a > b ? a : b);
-
     final baseMaxY = periodBudget > maxDailyTotal ? periodBudget : maxDailyTotal;
     final chartMaxY = baseMaxY == 0 ? 100.0 : baseMaxY;
 
