@@ -47,7 +47,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
       'pizza',
     ],
 
-    'transport': [
+    'transpo': [
       'grab',
       'taxi',
       'jeep',
@@ -59,18 +59,15 @@ class _AddExpensePageState extends State<AddExpensePage> {
       'transport',
     ],
 
-    'shopping': [
-      'clothes',
+    'wants': [      // shopping and entertainment categories merged into wants 
+      'clothes',    // shopping
       'shoes',
       'mall',
       'shop',
       'shopping',
       'lazada',
       'shopee',
-    ],
-
-    'entertainment': [
-      'netflix',
+      'netflix',    // entertainment
       'spotify',
       'movie',
       'game',
