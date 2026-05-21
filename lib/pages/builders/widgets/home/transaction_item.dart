@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fins/themes/logic/app_themes.dart';
 import '../../../expense_model.dart';
 
 class TransactionItem extends StatelessWidget {
@@ -40,7 +41,7 @@ class TransactionItem extends StatelessWidget {
         break;
       default:
         icon = Icons.attach_money;
-        iconColor = Colors.black;
+        iconColor = context.primary;
     }
 
     if (isCashIn) {
@@ -49,19 +50,19 @@ class TransactionItem extends StatelessWidget {
     }
 
     return Container(
-      color: const Color(0xFFECF3FA),
+      color: context.primary.withOpacity(0.07),
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.edit_square, color: Colors.grey[400], size: 24),
+            icon: Icon(Icons.edit_square, color: context.primary.withOpacity(0.4), size: 24),
             onPressed: onEdit,
           ),
           const SizedBox(width: 12),
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
+              color: context.primary.withOpacity(0.12),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: iconColor),
@@ -80,7 +81,10 @@ class TransactionItem extends StatelessWidget {
                 ),
                 Text(
                   isCashIn ? 'CASH IN' : item.category.toUpperCase(),
-                  style: TextStyle(color: Colors.blueGrey[300], fontSize: 10),
+                  style: TextStyle(
+                    color: context.primary.withOpacity(0.45),
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),

@@ -170,6 +170,51 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
     });
   }
 
+  void _showAddedSnackBar(BuildContext context, String expenseName) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        duration: const Duration(seconds: 3),
+        content: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: context.primary.withOpacity(0.92),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.check_circle_outline_rounded,
+                  color: context.surface.withOpacity(0.85), size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Added "$expenseName"',
+                  style: TextStyle(
+                    color: context.surface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // List of all the screens. HomePage must be instantiated with its static key
@@ -242,9 +287,9 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
             });
             HomePage.homePageStateKey.currentState?.loadExpenses();
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Expense "${newExpense.name}" added successfully.')),
-            );
+            if (context.mounted) {
+              _showAddedSnackBar(context, newExpense.name);
+            }
           }
         },
         child: Icon(Icons.add, color: context.surface),

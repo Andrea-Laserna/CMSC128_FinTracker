@@ -30,11 +30,18 @@ class _HomePageState extends State<HomePage>
   with SingleTickerProviderStateMixin {
 
   late List<DateTime> weekDates;
-  late String currentMonthName;
   late TabController _tabController;
   late DateTime _currentWeekStart;
 
   String _budgetMode = 'weekly'; //default to weekly
+
+  String get currentMonthName {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    return months[weekDates[_tabController.index].month - 1];
+  }
 
   Future<void> loadExpenses() async {
     final data = await DBHelper().getAllExpenses();
@@ -55,12 +62,6 @@ class _HomePageState extends State<HomePage>
     weekDates = getWeekDates(_currentWeekStart);
     _loadBudget();
 
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
-    ];
-    currentMonthName = months[now.month - 1];
-
     _tabController = TabController(
       length: weekDates.length,
       vsync: this,
@@ -72,24 +73,17 @@ class _HomePageState extends State<HomePage>
   }
   
   Future<void> _loadBudget() async {
-  final prefs = await SharedPreferences.getInstance();
-
-  final savedBudget = prefs.getDouble('budgetAmount');
-  final savedMode = prefs.getString('budgetMode'); 
-
-  setState(() {
-    if (savedBudget != null) {
-      HomePage.userBudget = savedBudget;
-    }
-    if (savedMode != null) {
-      _budgetMode = savedMode; 
-    }
-  });
-}
+    final prefs = await SharedPreferences.getInstance();
+    final savedBudget = prefs.getDouble('budgetAmount');
+    final savedMode = prefs.getString('budgetMode'); 
+    setState(() {
+      if (savedBudget != null) HomePage.userBudget = savedBudget;
+      if (savedMode != null) _budgetMode = savedMode; 
+    });
+  }
 
   double _calculateMonthlySpent(){
     final now = DateTime.now();
-    
     return HomePage.expenses
       .where((e) => e.date.month == now.month && e.date.year == now.year)
         .fold(0.0, (sum, e) => sum + e.amount); 
@@ -101,10 +95,62 @@ class _HomePageState extends State<HomePage>
     super.dispose();
   }
 
+  void _showThemedSnackBar({
+    required String message,
+    required IconData icon,
+  }) {
+    final messenger = ScaffoldMessenger.of(context);
+    final primaryColor = context.primary;
+    final surfaceColor = context.surface;
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        duration: const Duration(seconds: 3),
+        content: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: primaryColor.withOpacity(0.92),
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: surfaceColor.withOpacity(0.85), size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: TextStyle(
+                    color: surfaceColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _deleteExpenseWithUndo(Expense item, int index) {
     setState(() => HomePage.expenses.removeAt(index));
 
     final messenger = ScaffoldMessenger.of(context);
+    final primaryColor = context.primary;
+    final surfaceColor = context.surface;
     bool undone = false;
 
     messenger.hideCurrentSnackBar();
@@ -119,11 +165,11 @@ class _HomePageState extends State<HomePage>
             content: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(185, 28, 35, 64),
+                color: primaryColor.withOpacity(0.92),
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.18),
+                    color: Colors.black.withOpacity(0.15),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -131,14 +177,14 @@ class _HomePageState extends State<HomePage>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.delete_outline_rounded,
-                      color: Colors.white70, size: 20),
+                  Icon(Icons.delete_outline_rounded,
+                      color: surfaceColor.withOpacity(0.85), size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'Deleted "${item.name}"',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: surfaceColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -154,13 +200,13 @@ class _HomePageState extends State<HomePage>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: surfaceColor.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Undo',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: surfaceColor,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
                         ),
@@ -193,6 +239,11 @@ class _HomePageState extends State<HomePage>
     );
     if (updated.id != null) await DBHelper().updateExpense(updated);
     setState(() => HomePage.expenses[index] = updated);
+
+    _showThemedSnackBar(
+      message: 'Updated "${updated.name}"',
+      icon: Icons.edit_outlined,
+    );
   }
 
   void _openEditExpenseDialog(int index) async {
@@ -225,9 +276,6 @@ class _HomePageState extends State<HomePage>
         actions: [
           IconButton(
             icon: Icon(Icons.calendar_month, color: colorNavy),
-            // If parent provided a handler to open the monthly view in-place,
-            // use it so the bottom navbar remains visible. Otherwise fall back
-            // to the previous behavior of pushing a new route.
             onPressed: () async {
               if (widget.onOpenMonthlyView != null) {
                 widget.onOpenMonthlyView!();
@@ -289,10 +337,10 @@ class _HomePageState extends State<HomePage>
                           onTap: () => _tabController.animateTo(index),
                           child: Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
-                              decoration: BoxDecoration(
-                                    color: isSelected
-                                      ? context.primary
-                                      : colorCardBg.withOpacity(0.5),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? context.primary
+                                  : colorCardBg.withOpacity(0.5),
                               borderRadius: BorderRadius.circular(25),
                             ),
                             child: Column(
@@ -340,7 +388,7 @@ class _HomePageState extends State<HomePage>
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: weekDates.map((date) => DayPage(
+              children: weekDates.map<Widget>((date) => DayPage(
                 date: date,
                 allExpenses: HomePage.expenses,
                 weekDates: weekDates,
