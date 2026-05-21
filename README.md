@@ -1,17 +1,5 @@
 # Fins
 
-<p align="center">
-  <strong>An Offline-First Personal Finance Tracker</strong>
-</p>
-
-<p align="center">
-  Manage expenses, track budgets, monitor cash flow, and gain financial insights — all without requiring an internet connection.
-</p>
-
----
-
-## Overview
-
 Fins is a personal finance tracking application designed for users who want a simple, reliable, and privacy-focused way to manage their finances.
 
 Instead of relying on spreadsheets or manual record-keeping, Fins provides a structured platform for recording expenses, managing budgets, monitoring cash flow, and reviewing financial summaries. All data is stored locally on the device, ensuring complete ownership and privacy of financial information.
@@ -21,8 +9,8 @@ Instead of relying on spreadsheets or manual record-keeping, Fins provides a str
 ## Table of Contents
 
 - [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Getting Started](#getting-started)
+- [Tech Stack](#tech-stack)
+- [Setting Up](#setting-up)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Running the Application](#running-the-application)
@@ -101,7 +89,7 @@ All information remains on the user's device.
 
 ---
 
-# Technology Stack
+# Tech Stack
 
 Fins is built using Flutter and local storage technologies to provide a fully offline experience.
 
@@ -113,7 +101,7 @@ Fins is built using Flutter and local storage technologies to provide a fully of
 
 ---
 
-# Getting Started
+# Setting Up
 
 ## Prerequisites
 
@@ -154,32 +142,34 @@ flutter pub get
 
 ## Running the Application
 
-### Option A — Android APK (Recommended)
+#### Option A — Android APK
 
-#### Build the APK
+**1. Navigate to the project root**
 
 ```bash
-flutter build apk --split-per-abi
+cd CMSC128_FinTracker
 ```
 
-#### Locate the Generated Files
+**2. Build the APK**
 
-```text
-build/app/outputs/flutter-apk/
+```bash
+flutter build apk
 ```
 
-| APK File | Recommended Device |
-|-----------|------------------|
-| `app-arm64-v8a-release.apk` | Most modern Android devices |
-| `app-armeabi-v7a-release.apk` | Older Android devices |
+**3. Locate the APK**
 
+The APK will be generated at:
+
+```
+android/app/build/outputs/apk/release/app-release.apk
+```
 #### Install on a Physical Device
 
-**Manual Installation**
+**A. Manual Installation**
 
-Transfer the APK through USB, cloud storage, or file sharing services. Open the APK on the device and allow installation from unknown sources when prompted.
+Transfer the APK through USB, cloud storage, or file-sharing services. Open the APK on the device and allow installation from unknown sources when prompted.
 
-**ADB Installation**
+**B. ADB Installation**
 
 ```bash
 adb install build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
@@ -250,9 +240,33 @@ flutter run
 
 Fins follows a layered architecture composed of the User Interface, Business Logic, and Data Storage layers.
 
-<p align="center">
-  <img width="678" height="793" alt="Logical View Diagram" src="https://github.com/user-attachments/assets/e64e9156-66db-4f04-a4c4-b194ae4adaf7" />
-</p>
+```mermaid
+flowchart TD
+    User(["👤 User"])
+
+    User -->|interacts| UI
+
+    subgraph UI["User Interface"]
+        Dashboard
+        AddExpense["Add Expense"]
+        SummaryReport["Summary Report"]
+        BudgetSettings["Budget & Notification Settings"]
+    end
+
+    UI -->|passes actions| BL
+
+    subgraph BL["Business Logic"]
+        ExpenseManager["Expense Manager"]
+        BudgetManager["Budget Manager"]
+        AnalyticsGenerator["Analytics Generator"]
+        NotificationScheduler["Notification Scheduler\n(reminds user)"]
+    end
+
+    BL -->|queries| SQLite
+    SQLite -->|returns data| BL
+
+    SQLite[("SQLite — Local Storage")]
+```
 
 ## Flow Description
 
