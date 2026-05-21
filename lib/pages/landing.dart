@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'customizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -267,21 +268,21 @@ class _LandingPageState extends State<LandingPage>
                               style: TextStyle(
                                 color: const Color(0xFF6C80A4),
                                 fontSize: isSmall ? 20 : 24,
-                                fontFamily: 'Rafgins',
+                                fontFamily: 'Outfit',
                                 letterSpacing: 0.5,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
+                           Text(
                               'FINS',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: const Color(0xFF1E2A3A),
-                                fontSize: isSmall ? 76 : 92,
-                                fontFamily: 'Rafgins',
-                                fontWeight: FontWeight.w500,
-                                letterSpacing: 4,
-                                height: 0.95,
+                              style: GoogleFonts.leckerliOne(
+                                textStyle: TextStyle(
+                                  color: const Color(0xFF1E2A3A),
+                                  fontSize: isSmall ? 82 : 96,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 2,
+                                  height: 1,
+                                ),
                               ),
                             ),
                           ],

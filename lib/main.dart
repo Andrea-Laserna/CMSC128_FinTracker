@@ -94,12 +94,12 @@ class _MyAppState extends State<MyApp> {
                   body: Center(child: CircularProgressIndicator()),
                 );
               }
-              final showLanding = snapshot.data ?? true;
-              if (showLanding) {
-                return const LandingPage();
-              }
-              return const ExpenseHomePage();
-              //  return const LandingPage();
+              // final showLanding = snapshot.data ?? true;
+              // if (showLanding) {
+              //   return const LandingPage();
+              // }
+              // return const ExpenseHomePage();
+              return const LandingPage();
             },
           ),
         );
