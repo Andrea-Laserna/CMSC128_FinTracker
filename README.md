@@ -166,11 +166,8 @@ flutter run
 
 Fins follows a layered logical structure composed of the user interface, business logic, and local data storage.
 
+<img width="678" height="793" alt="Screenshot 2026-05-21 143449" src="https://github.com/user-attachments/assets/e64e9156-66db-4f04-a4c4-b194ae4adaf7" />
 
-```
-<img width="718" height="830" alt="image" src="https://github.com/user-attachments/assets/8ed61ec4-5008-4f1b-a621-5a284fc4ccff" />
-
-```
 
 ### Flow Description
 
