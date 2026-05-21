@@ -76,7 +76,7 @@ class DayPage extends StatelessWidget {
 
         // Daily total pill
         Container(
-          margin: const EdgeInsets.only(bottom: 15),
+          margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.grey[200],
@@ -93,7 +93,25 @@ class DayPage extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 10),
+        // Swipe hint — only visible when there are expenses
+        if (dayExpenses.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.swipe_left_rounded, size: 14, color: Colors.grey[400]),
+                const SizedBox(width: 4),
+                Text(
+                  'Swipe left on an item to delete',
+                  style: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
 
         // Expense list
         Expanded(
