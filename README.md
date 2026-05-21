@@ -1,61 +1,210 @@
-# CMSC129 Activity 1 LEC
+# Fins
 
-a.) Logical View:
-![Logical View Diagram img1](Screenshot%202026-02-27%20223141.png)
-![Logical View Diagram img2](Screenshot%202026-02-27%20232050.png)
+A personal finance tracker built for offline use, designed to help users manage expenses, budgets, and financial summaries — right from their Android device.
 
-The Fins system follows a layered logical structure composed of the user interface, business logic, and local data storage. The user interacts with the application through the UI layer, which includes the dashboard, expense entry page, summary page, weekly view, and budget settings. User actions from the UI are passed to the business logic layer, which contains managers responsible for handling expenses, categories, budgets, analytics generation, and notification scheduling. This layer processes user input, performs validation, calculates summaries, and prepares data for display. The business logic communicates with the data layer, which uses local SQLite storage to persist financial records. Since the system is offline-first, all data operations occur locally without external servers. For reminders, the notification scheduler interacts with the Android notification system, which delivers alerts back to the user through the UI. This logical separation improves maintainability and clearly defines how system components collaborate.
-
-
-b.) Software Architecture
-
-Pattern chosen: Model-View-ViewModel
-
-Fins’ current software structure pattern resembles the Model-View-ViewModel or MVVM. It is a widely known pattern for MVVM for mobile applications. It is an architectural pattern that differentiates the user interface (UI) of the app from its backend logic. This is used a lot since it helps improve the app’s maintainability. Although not explicitly said, it can be observed in our application. Firstly, the view layer is implemented using Flutter’s widgets, which handle the UI for the homepage, adding income or expenses, the dashboard, and more. This part displays the UI of our system and does not directly access the database operations. On the other hand, the ViewModel acts as the bridge between the View and the Model. It shows the presentation with the data that was from the Model. In simple words, it handles user interaction and updates the model, which results in the updates that can be seen by the user. The Model serves as the foundation of the Fins architecture, representing the data structures. It is responsible for managing all core data, including income entries, expense records, and summaries. Since Fins is currently designed for offline use, the Model does not rely on communication with a remote server. Instead, it interacts directly with local storage to save, retrieve and update financial data. 
-
-In summary, adopting the MVVM pattern within the Fins application provides a robust framework that balances UI responsiveness with data integrity. By separating the Flutter widgets (View) from the data handling (Model) through a mediating layer (ViewModel), the app achieves a high level of modularity. This structure not only makes the code easier to test and maintain but also ensures that the financial tracking experience is seamless for the user. 
-
-# Creating the App 
-
->> flutter clean                                                                       
->> flutter pub get
->> flutter build apk --debug
-
->> flutter clean
->> flutter pub get
->> flutter build apk --release  
-                                                       
->> adb install -r android/app/build/outputs/flutter-apk/app-release.apk
-
-
-# CMSC128 FinTracker – MVC Project Structure
-
-Authors:
-Andrea Laserna
-Sam Lansoy
-Marinelle Joan Tambolero
-Michaela Borces
-Christel Hope Ong
-Sophe Mae Dela Cruz
-
-## Overview
-
-This document shows how the **FinTracker** Flutter application is organized using the **MVC (Model–View–Controller)** architectural pattern, adapted from the FERN-MVC structure pattern.
+Fins replaces manual expense logging with a structured, intuitive tool for tracking income and expenses, setting budgets, and visualizing spending patterns — all stored locally on-device.
 
 ---
 
-## High-Level MVC Architecture
+## Table of Contents
 
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running the App](#running-the-app)
+- [Logical View](#logical-view)
+- [Software Architecture](#software-architecture)
+- [Project Structure](#project-structure)
+- [Authors](#authors)
+
+---
+
+## Features
+
+- **Fully offline, no login required** — Get started immediately; all user data and settings are stored locally on the device
+- **Expense management (CRUD)** — Create, read, update, and delete both past and future expenses; organize them using preset or custom categories
+- **Cash in recording** — Log incoming funds to automatically adjust to the user's remaining budget
+- **Receipt scanner** — Scan receipts with your camera or upload from gallery; the app automatically extracts and fills in the expense details
+- **Budget & notifications** — Set and edit budget limits, and configure personalized reminder notifications
+- **Summary reports** — View monthly and weekly expense summaries, browse past expenses, and compare spending by day and week
+- **Financial insights** — Get fully offline AI-powered analysis of your spending habits, with actionable advice on saving and improving financial health
+- **Theme customization** — Personalize the app's appearance by choosing from a selection of available themes
+  
+---
+
+## Tech Stack
+
+Fins is a Flutter mobile application targeting Android, with local SQLite storage.
+
+| Package / Tool | Purpose |
+|---|---|
+| `Flutter` | UI framework and cross-platform mobile development |
+| `SQLite` | Local data persistence |
+| `Android Notification System` | Scheduled reminders and alerts |
+
+---
+
+## Setting Up
+
+### Prerequisites
+
+| Tool | Download |
+|---|---|
+| Flutter SDK | [docs.flutter.dev](https://docs.flutter.dev/get-started/install) |
+| Git | [git-scm.com](https://git-scm.com/downloads) |
+| IDE | VS Code or Android Studio (with Flutter and Dart plugins) |
+
+### Installation
+
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/Fins-Financial-Tracker/CMSC128_FinTracker
+cd CMSC128_FinTracker
 ```
-Flutter App (FinTracker)
-├── Models          # Data structures, database logic
-├── Views           # UI screens and pages
-└── Controllers     # Business logic, state management, data operations
+
+**2. Check your environment**
+
+```bash
+flutter doctor
+```
+
+Resolve any issues flagged before proceeding.
+
+**3. Install dependencies**
+
+```bash
+flutter pub get
 ```
 
 ---
 
-## Current Project Structure (As-Is)
+### Running the App
+
+#### Option A — Android APK (Recommended)
+
+**1. Generate the APK**
+
+```bash
+flutter build apk --split-per-abi
+```
+
+**2. Locate the output files**
+
+```
+build/app/outputs/flutter-apk/
+```
+
+| APK | Use case |
+|---|---|
+| `app-arm64-v8a-release.apk` | Most modern Android phones |
+| `app-armeabi-v7a-release.apk` | Older or budget Android devices |
+
+**3. Install on your device**
+
+*Option 1 — Manual transfer:* Send the `.apk` to your phone via Discord, Google Drive, or USB. Open the file on your phone, allow "Install from Unknown Sources" when prompted, then launch the app.
+
+*Option 2 — ADB (via USB cable):*
+
+```bash
+adb install build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+```
+
+---
+
+#### Option B — Windows Desktop
+
+**1. Install [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/)**
+   - Select the **Desktop development with C++** workload during installation.
+   - Ensure all default components are checked.
+
+**2. Enable Developer Mode**
+   - Go to **Windows Settings > Privacy & Security > For developers**.
+   - Toggle **Developer Mode** to On.
+
+**3. Enable Windows desktop support in Flutter**
+
+```bash
+flutter config --enable-windows-desktop
+```
+
+**4. Run the app**
+
+```bash
+flutter run -d windows
+```
+
+---
+
+#### Option C — Android Emulator (Android Studio)
+
+**1. Install [Android Studio](https://developer.android.com/studio)**
+
+**2. Set up a virtual device**
+   - Open Android Studio and go to **Tools > Device Manager**.
+   - Click **Create Device** and select a phone (e.g., Pixel 7).
+   - Download a system image (API 34 or higher recommended).
+   - Finish setup and click the **Play** button to start the emulator.
+
+**3. Verify Flutter detects the emulator**
+
+```bash
+flutter devices
+```
+
+**4. Run the app**
+
+```bash
+flutter run
+```
+
+---
+
+## Logical View
+
+Fins follows a layered logical structure composed of the user interface, business logic, and local data storage.
+
+
+```
+<img width="718" height="830" alt="image" src="https://github.com/user-attachments/assets/8ed61ec4-5008-4f1b-a621-5a284fc4ccff" />
+
+```
+
+### Flow Description
+
+1. The **User** interacts with the app through the UI layer (dashboard, forms, settings).
+2. **User actions** are passed to the Business Logic layer for processing and validation.
+3. **Managers** compute summaries, handle categories, and manage budgets.
+4. The **Data Layer** persists all financial records locally via SQLite.
+5. The **Notification Scheduler** triggers Android notifications, which surface back to the user.
+
+This logical separation improves maintainability and clearly defines how system components collaborate.
+
+---
+
+## Software Architecture
+
+Fins uses the **Model-View-ViewModel (MVVM)** architectural pattern.
+
+| Layer | Implementation | Responsibility |
+|---|---|---|
+| **View** | Flutter widgets | UI screens (homepage, add expense, dashboard, etc.) |
+| **ViewModel** | Presentation logic | Bridges View and Model; handles user interaction and state updates |
+| **Model** | Data classes + SQLite | Core data structures (income, expenses, summaries); local persistence |
+
+MVVM is widely adopted for mobile applications because it cleanly separates UI from backend logic, improving maintainability and testability. In Fins:
+
+- The **View** is implemented using Flutter's widget system and does not directly access database operations.
+- The **ViewModel** acts as the bridge — it exposes data from the Model to the View and handles user-triggered updates.
+- The **Model** manages all core data (income entries, expense records, summaries) and interacts directly with local SQLite storage, with no dependency on a remote server.
+
+---
+
+## Project Structure
+
+### Current Structure
 
 ```
 CMSC128_FinTracker/
@@ -77,81 +226,58 @@ CMSC128_FinTracker/
 │   └── utils/
 │       └── notification_helper.dart       # Utility: Notifications
 │
-├── android/                               # Android platform code
-├── ios/                                   # iOS platform code
-├── web/                                   # Web platform code
-├── windows/                               # Windows platform code
-├── linux/                                 # Linux platform code
-├── macos/                                 # macOS platform code
-│
-└── pubspec.yaml                           # Package dependencies
+├── android/
+├── ios/
+├── web/
+├── windows/
+├── linux/
+├── macos/
+└── pubspec.yaml
 ```
 
----
+### MVC Layer Mapping (Current)
 
-## MVC Mapping: Current Structure
+**Model** — Data & Business Rules
 
-### **MODEL** – Data & Business Rules
+| File | Component | Responsibility |
+|---|---|---|
+| `lib/database/db_helper.dart` | DBHelper | Database initialization, CRUD operations |
+| `lib/pages/expense_model.dart` | Expense class | Data structure for expenses (toMap, fromMap) |
 
-| Current Location | Component | Responsibility |
-|------------------|-----------|-----------------|
-| `lib/database/db_helper.dart` | **DBHelper** | Database initialization, CRUD operations |
-| `lib/pages/expense_model.dart` | **Expense** class | Data structure for expenses (toMap, fromMap conversions) |
+**View** — User Interface
 
-**What it does:**
-- Manages SQLite database connection
-- Stores and retrieves expense data
-- Defines data schema and validation rules
+| File | Component | Responsibility |
+|---|---|---|
+| `lib/pages/landing.dart` | LandingPage | Splash/onboarding screen |
+| `lib/pages/homepage.dart` | HomePage | Main dashboard, expense list |
+| `lib/pages/add_expense.dart` | AddExpensePage | Form for creating/updating expenses |
+| `lib/pages/summary.dart` | SummaryPage | Reports and analytics |
+| `lib/pages/customizations.dart` | CustomizationsPage | User preferences/settings |
+| `lib/pages/profile.dart` | ProfilePage | User profile information |
 
----
+**Controller** — Business Logic *(currently scattered in pages)*
 
-### **VIEW** – User Interface
+| File | Component | Responsibility |
+|---|---|---|
+| Scattered in `pages/` | Page widgets | Expense loading, filtering, data passing |
+| `lib/utils/notification_helper.dart` | NotificationHelper | Triggers notifications |
 
-| Current Location | Component | Responsibility |
-|------------------|-----------|-----------------|
-| `lib/pages/landing.dart` | **LandingPage** | Splash/onboarding screen |
-| `lib/pages/homepage.dart` | **HomePage** | Main dashboard, expense list view |
-| `lib/pages/add_expense.dart` | **AddExpensePage** | Form for creating/updating expenses |
-| `lib/pages/summary.dart` | **SummaryPage** | Reports and analytics view |
-| `lib/pages/customizations.dart` | **CustomizationsPage** | User preferences/settings |
-| `lib/pages/profile.dart` | **ProfilePage** | User profile information |
-
-**What it does:**
-- Displays UI elements (buttons, forms, lists)
-- Collects user input
-- Shows status and information to users
-- Calls Controllers to process user actions
+> **Note:** Business logic is currently mixed within View pages. A dedicated controller/service layer is planned for a future refactor.
 
 ---
 
-### **CONTROLLER** – Business Logic & State Management
-
-| Current Location | Component | Responsibility |
-|------------------|-----------|-----------------|
-| Scattered in `pages/` | Business logic in page widgets | Handles expenses loading, filtering, data passing |
-| `lib/utils/notification_helper.dart` | **NotificationHelper** | Triggers notifications |
-
-**Issues Identified:**
-- Business logic is currently mixed within View pages
-- No dedicated service/controller layer
-- State management could be better organized
-
----
-
-## Future Project Structure
-
-For better organization and separation of concerns, the project will be restructured as follows:
+### Future Structure
 
 ```
 CMSC128_FinTracker/
 ├── lib/
-│   ├── main.dart                          # Entry point
+│   ├── main.dart
 │   │
-│   ├── models/                            # MODEL LAYER
-│   │   ├── expense.dart                   # Expense data class
-│   │   └── user.dart                      # User profile data 
+│   ├── models/
+│   │   ├── expense.dart
+│   │   └── user.dart
 │   │
-│   ├── views/                             # VIEW LAYER
+│   ├── views/
 │   │   ├── screens/
 │   │   │   ├── landing_screen.dart
 │   │   │   ├── home_screen.dart
@@ -161,168 +287,59 @@ CMSC128_FinTracker/
 │   │   │   └── profile_screen.dart
 │   │   │
 │   │   └── widgets/
-│   │       ├── expense_item.dart          # Reusable expense list item
-│   │       ├── bottom_nav_bar.dart        # Navigation widget
-│   │       └── expense_form.dart          # Reusable form component
+│   │       ├── expense_item.dart
+│   │       ├── bottom_nav_bar.dart
+│   │       └── expense_form.dart
 │   │
-│   ├── controllers/                       # CONTROLLER LAYER
-│   │   ├── expense_controller.dart        # Business logic for expenses
-│   │   ├── user_controller.dart           # Business logic for user data
-│   │   └── notification_controller.dart   # Notification handling
+│   ├── controllers/
+│   │   ├── expense_controller.dart
+│   │   ├── user_controller.dart
+│   │   └── notification_controller.dart
 │   │
-│   ├── services/                          # Service/Helper layer
-│   │   ├── database_service.dart          # Database operations wrapper
-│   │   ├── notification_service.dart      # Notification service
-│   │   └── storage_service.dart           # SharedPreferences wrapper
+│   ├── services/
+│   │   ├── database_service.dart
+│   │   ├── notification_service.dart
+│   │   └── storage_service.dart
 │   │
-│   └── config/                            # Configuration
-│       ├── constants.dart                 # App-wide constants
-│       └── theme.dart                     # Theme configuration
+│   └── config/
+│       ├── constants.dart
+│       └── theme.dart
 │
-├── android/                               # Android platform
-├── ios/                                   # iOS platform
-├── web/                                   # Web platform
-├── windows/                               # Windows platform
-├── linux/                                 # Linux platform
-├── macos/                                 # macOS platform
-│
+├── android/
+├── ios/
+├── web/
+├── windows/
+├── linux/
+├── macos/
 └── pubspec.yaml
 ```
 
----
+### Example Flow
 
-## MVC Mapping: Future Project Structure
-
-### **MODEL** ✓
-
+**Current (problematic):**
 ```
-lib/models/
-├── expense.dart       # Expense data model with toMap() and fromMap()
-└── user.dart          # User/Profile data model
-```
-
-**Responsibility:**
-- Define data structures
-- Implement serialization/deserialization (toMap, fromMap, toJson)
-- Data validation rules
-- NO database calls, NO UI logic
----
-
-### **VIEW** ✓
-
-```
-lib/views/
-├── screens/
-│   ├── landing_screen.dart
-│   ├── home_screen.dart
-│   ├── add_expense_screen.dart
-│   └── summary_screen.dart
-│
-└── widgets/
-    ├── expense_item.dart
-    ├── expense_form.dart
-    └── bottom_nav_bar.dart
-```
-
-**Responsibility:**
-- Build UI layouts
-- Respond to user interactions
-- Call Controllers to process actions
-- Update UI based on Controller responses
-- NO business logic, NO database calls
-
----
-
-### **CONTROLLER** ✓
-
-```
-lib/controllers/
-├── expense_controller.dart     # Manages expense CRUD operations
-├── user_controller.dart        # Manages user data
-└── notification_controller.dart # Manages notifications
-```
-
-**Responsibility:**
-- Implement business logic
-- Orchestrate between Views and Models
-- Handle data validation and processing
-- Call Services for database/storage operations
-- Return data to Views for display
-
----
-
-## Example Flow Comparison
-
-### Current (Problematic):
-```
-View (HomePage) 
-  ↓ (mixture of UI + business logic)
-  ├→ Directly calls DBHelper
-  ├→ Manages state with static variables
+View (HomePage)
+  └→ Directly calls DBHelper
+  └→ Manages state with static variables
   └→ Performs filtering and calculations
 ```
 
-### Future flow:
+**Future:**
 ```
-View (HomeScreen) 
-  ↓ (user interaction)
+View (HomeScreen)
   → Controller (ExpenseController)
-    ↓
     → Service (DatabaseService)
-      ↓
       → Model (Expense class)
-        ↓
-        SQLite Database
+        → SQLite Database
 ```
 
 ---
 
-## Benefits of Future Structure
+## Authors
 
-| Benefit | Current | Recommended |
-|---------|---------|-------------|
-| **Code Reusability** | Low (logic tied to pages) | High (controllers can be used by multiple views) |
-| **Testing** | Difficult (mixed concerns) | Easy (isolated layers) |
-| **Maintenance** | Hard (scattered logic) | Easy (clear organization) |
-| **Scalability** | Limited | Excellent |
-| **Unit Testing** | Almost impossible | Straightforward |
-| **Code Clarity** | Confusing | Clear responsibilities |
-
----
-
-## Migration Steps
-
-To reorganize the project to follow this structure:
-
-1. **Create new folder structure** under `lib/`
-   - Move `expense_model.dart` → `models/expense.dart`
-   - Create `controllers/` folder
-   - Create `services/` folder
-   - Rename `pages/` → `views/screens/`
-   - Extract reusable widgets → `views/widgets/`
-
-2. **Extract controllers**
-   - Move database logic from pages to `controllers/expense_controller.dart`
-   - Move notification logic to `controllers/notification_controller.dart`
-
-3. **Create service layer**
-   - Wrap `db_helper.dart` into `services/database_service.dart`
-   - Wrap notification helper into `services/notification_service.dart`
-
-4. **Update imports** in all files
-
-5. **Add state management** (optional but recommended)
-   - Consider using Provider, GetX, or Riverpod for better state management
-
----
-
-## Summary
-
-The **CMSC128 FinTracker** follows basic MVC principles but can be significantly improved by:
-
-- ✓ **Keeping Models** (data classes and DB layer) clearly separated
-- ✓ **Keeping Views** (UI screens and widgets) focused on display only  
-- ✓ **Creating Controllers** to handle business logic and orchestration
-- ✓ **Adding Services** for reusable infrastructure operations
-
-This structure directly mirrors the **FERN-MVC pattern** shown in the sample, adapted for Flutter's mobile-first architecture.
+- Andrea Laserna
+- Sam Lansoy
+- Marinelle Joan Tambolero
+- Michaela Borces
+- Christel Hope Ong
+- Sophe Mae Dela Cruz
