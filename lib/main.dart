@@ -95,11 +95,11 @@ class _MyAppState extends State<MyApp> {
                 );
               }
               final showLanding = snapshot.data ?? true;
-              if (showLanding) {
-                return const LandingPage();
-              }
-              return const ExpenseHomePage();
-              //  return const LandingPage();
+              // if (showLanding) {
+              //   return const LandingPage();
+              // }
+              // return const ExpenseHomePage();
+               return const LandingPage();
             },
           ),
         );
