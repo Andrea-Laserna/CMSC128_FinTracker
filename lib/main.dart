@@ -140,6 +140,8 @@ class ExpenseHomePage extends StatefulWidget {
   State<ExpenseHomePage> createState() => _ExpenseHomePageState();
 }
 
+Key _summaryKey = UniqueKey();
+
 class _ExpenseHomePageState extends State<ExpenseHomePage> {
   // Track selected tab. 0 is 'Home'.
   int _bottomNavIndex = 0;
@@ -234,7 +236,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
         onOpenMonthlyView: _openMonthlyOverlay,
       ),
       const CustomizationPage(),  // budget & expense settings (Now Settings tab)
-      const SummaryPage(),
+      SummaryPage(key: SummaryPage.summaryKey),
       const ProfilePage(),       // placeholder — will become AI page (Financial Insight)
     ];
 
@@ -280,6 +282,7 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
             
             setState(() {
               HomePage.expenses.add(newExpense); 
+              SummaryPage.summaryKey.currentState?.loadExpensesFromDB();
               if (_showMonthlyOverlay) {
                 MonthlyViewPage.monthlyViewStateKey.currentState?.loadAllExpenses();
               } else if (_bottomNavIndex != 0) {
@@ -322,6 +325,10 @@ class _ExpenseHomePageState extends State<ExpenseHomePage> {
                 _bottomNavIndex = index;
                 _showMonthlyOverlay = false; // hide overlay when switching tabs
               });
+              if (index == 2) { // Summary tab
+                // Force SummaryPage to rebuild and show new totals
+                _summaryKey = UniqueKey();
+              }
             },
           );
         },

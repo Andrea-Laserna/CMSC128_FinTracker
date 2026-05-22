@@ -22,6 +22,7 @@ import 'summary_widgets/summary_mode_toggle.dart';
 
 class SummaryPage extends StatefulWidget {
   const SummaryPage({super.key});
+  static final GlobalKey<_SummaryPageState> summaryKey = GlobalKey<_SummaryPageState>();
 
   @override
   State<SummaryPage> createState() => _SummaryPageState();
@@ -53,6 +54,12 @@ class _SummaryPageState extends State<SummaryPage> {
     _selectedWeek = SummaryDateUtils.getStartOfWeek(now);
     _selectedMonth = DateTime(now.year, now.month, 1);
 
+    loadExpensesFromDB();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     loadExpensesFromDB();
   }
 
@@ -190,9 +197,27 @@ class _SummaryPageState extends State<SummaryPage> {
 
     final isDataEmpty = summary.chartCategories.isEmpty;
     // (monthly budget/days in month) x days in week
-    final savings = (_periodBudget - summary.total) < 0
+    /*final totalCashIn = SummaryCalculator.expensesInRange(
+            _expenses, _getCurrentPeriodStart(), _getCurrentPeriodEnd())
+        .where((e) => e.category == 'CASH IN')
+        .fold(0.0, (sum, e) => sum + e.amount);*/
+
+    print('--- SAVINGS DEBUG ---');
+    print('periodBudget: $_periodBudget');
+    print('expenseTotal: ${summary.expenseTotal}');
+    final totalCashIn = SummaryCalculator.expensesInRange(
+        _expenses, _getCurrentPeriodStart(), _getCurrentPeriodEnd())
+      .where((e) => e.category == 'CASH IN')
+      .fold(0.0, (sum, e) => sum + e.amount);
+    print('totalCashIn: $totalCashIn');
+    print('all expense categories: ${_expenses.map((e) => e.category).toList()}');
+    print('period start: ${_getCurrentPeriodStart()}');
+    print('period end: ${_getCurrentPeriodEnd()}');
+    print('---------------------');
+
+    final savings = (_periodBudget + totalCashIn - summary.expenseTotal) < 0
       ? 0.0
-      : (_periodBudget - summary.total).toDouble();
+      : (_periodBudget + totalCashIn - summary.expenseTotal).toDouble();
 
     return Scaffold(
       backgroundColor: colorPageBg,
