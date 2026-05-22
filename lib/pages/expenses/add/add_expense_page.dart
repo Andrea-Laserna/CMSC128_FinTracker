@@ -380,14 +380,14 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                 onPressed: () {
                                   if (_formKey.currentState!.validate()) {
                                     final categoryToSave = _isCashIn
-                                        ? 'cash_in'
+                                        ? 'CASH IN'
                                         : category == 'custom'
                                             ? customCategory
                                             : category;
                                     final parsedAmount =
                                         double.parse(amount.trim()).abs();
                                     final finalAmount =
-                                        _isCashIn ? -parsedAmount : parsedAmount;
+                                        parsedAmount;
                                     final newExpense = Expense(
                                       name: name.trim(),
                                       amount: finalAmount,

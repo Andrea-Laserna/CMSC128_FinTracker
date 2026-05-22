@@ -63,7 +63,7 @@ class _ProfilePageState extends State<ProfilePage> {
         .where((e) => e.date.year == now.year && e.date.month == now.month)
         .toList();
     final double total = thisMonth
-      .where((e) => e.amount > 0)
+      .where((e) => e.amount > 0 && e.category != 'CASH IN')
       .fold(0.0, (s, e) => s + e.amount);
     final double score = _allExpenses.isEmpty
         ? 0
@@ -71,7 +71,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final top = _service.getTopExpenseCategory(thisMonth);
     return {
       'total': total,
-      'count': thisMonth.length,
+      'count': thisMonth.where((e) => e.category != 'CASH IN').length,
       'score': score,
       'topCat': top?['category'] ?? '—',
     };

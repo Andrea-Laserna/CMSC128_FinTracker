@@ -85,7 +85,7 @@ class _HomePageState extends State<HomePage>
   double _calculateMonthlySpent(){
     final now = DateTime.now();
     return HomePage.expenses
-      .where((e) => e.date.month == now.month && e.date.year == now.year)
+      .where((e) => e.date.month == now.month && e.date.year == now.year && e.category != 'CASH IN')
         .fold(0.0, (sum, e) => sum + e.amount); 
   }
 

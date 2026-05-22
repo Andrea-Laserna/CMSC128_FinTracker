@@ -16,12 +16,12 @@ class ExpenseAggregator {
 
   double total(List<Expense> expenses) =>
       expenses
-        .where((e) => e.amount > 0)
+        .where((e) => e.amount > 0 && e.category != 'CASH IN')
         .fold(0.0, (sum, e) => sum + e.amount);
 
   Map<String, double> totalsByCategory(List<Expense> expenses) {
     final result = <String, double>{};
-    for (final e in expenses.where((e) => e.amount > 0)) {
+    for (final e in expenses.where((e) => e.amount > 0 && e.category != 'CASH IN')) {
       result.update(
         e.category.toLowerCase(),
         (v) => v + e.amount,
@@ -33,7 +33,7 @@ class ExpenseAggregator {
 
   Map<int, double> totalsByDayOfWeek(List<Expense> expenses) {
     final byDay = <int, double>{};
-    for (final e in expenses.where((e) => e.amount > 0)) {
+    for (final e in expenses.where((e) => e.amount > 0 && e.category != 'CASH IN')) {
       byDay.update(e.date.weekday, (v) => v + e.amount,
           ifAbsent: () => e.amount);
     }
@@ -41,8 +41,8 @@ class ExpenseAggregator {
   }
 
   Map<String, double> weekendVsWeekday(List<Expense> expenses) {
-    final weekday = expenses.where((e) => e.date.weekday <= 5).toList();
-    final weekend = expenses.where((e) => e.date.weekday > 5).toList();
+    final weekday = expenses.where((e) => e.date.weekday <= 5 && e.category != 'CASH IN').toList();
+    final weekend = expenses.where((e) => e.date.weekday > 5 && e.category != 'CASH IN').toList();
 
     final weekdayDays = weekday
         .map((e) => DateTime(e.date.year, e.date.month, e.date.day))
@@ -73,7 +73,7 @@ class ExpenseAggregator {
 
       final weekExpenses =
           expenses
-            .where((e) => e.amount > 0)
+            .where((e) => e.amount > 0 && e.category != 'CASH IN')
             .where((e) => e.date.day >= startDay && e.date.day <= endDay)
             .toList();
 
@@ -90,7 +90,7 @@ class ExpenseAggregator {
 
   List<Map<String, dynamic>> detectRecurring(List<Expense> expenses) {
     final grouped = <String, List<Expense>>{};
-    for (final e in expenses.where((e) => e.amount > 0)) {
+    for (final e in expenses.where((e) => e.amount > 0 && e.category != 'CASH IN')) {
       grouped.putIfAbsent(e.name.toLowerCase().trim(), () => []).add(e);
     }
     return grouped.entries
@@ -105,7 +105,7 @@ class ExpenseAggregator {
   }
 
   Expense? topExpense(List<Expense> expenses) {
-    final filtered = expenses.where((e) => e.amount > 0).toList();
+    final filtered = expenses.where((e) => e.amount > 0 && e.category != 'CASH IN').toList();
     if (filtered.isEmpty) return null;
     return filtered.reduce((a, b) => a.amount > b.amount ? a : b);
   }

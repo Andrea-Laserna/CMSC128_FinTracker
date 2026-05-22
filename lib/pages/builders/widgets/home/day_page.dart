@@ -65,7 +65,7 @@ class DayPage extends StatelessWidget {
                   child: SummaryCard(
                     title: 'Remaining Funds',
                     amount: budgetMode == 'monthly'
-                        ? '₱${(userBudget - monthlySpent).toStringAsFixed(2)}'
+                        ? '₱${(userBudget + calculateMonthlyCashIn(allExpenses, date) - monthlySpent).toStringAsFixed(2)}'
                         : getBalanceLeft(allExpenses, weekDates, userBudget),
                   ),
                 ),

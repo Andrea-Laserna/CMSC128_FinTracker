@@ -16,7 +16,7 @@ class TransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     IconData icon;
     Color iconColor;
-    final isCashIn = item.amount < 0;
+    final isCashIn = item.category == 'CASH IN';
 
     switch (item.category) {
       case 'cash_in':

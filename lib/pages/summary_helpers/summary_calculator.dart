@@ -40,13 +40,13 @@ class SummaryCalculator {
     final periodExpenses = expensesInRange(expenses, start, end);
     final total = periodExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
     final expenseOnly = periodExpenses
-        .where((expense) => expense.amount > 0)
+        .where((expense) => expense.amount > 0 && expense.category != 'CASH IN')
         .toList();
     final expenseTotal = expenseOnly.fold(0.0, (sum, expense) => sum + expense.amount);
     final previousExpenses = expensesInRange(expenses, previousStart, previousEnd);
     final previousTotal = previousExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
     final previousExpenseTotal = previousExpenses
-      .where((expense) => expense.amount > 0)
+      .where((expense) => expense.amount > 0 && expense.category != 'CASH IN')
       .fold(0.0, (sum, expense) => sum + expense.amount);
 
     final Map<String, double> categoryTotals = {};
