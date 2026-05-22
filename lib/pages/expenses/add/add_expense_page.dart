@@ -334,7 +334,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                             ],
 
                             // Date Spent
-                            buildLabel('Date Spent'),
+                            buildLabel(_isCashIn ? 'Date Received' : 'Date Spent'),
                             buildDatePicker(
                               context: context,
                               selectedDate: selectedDate,
