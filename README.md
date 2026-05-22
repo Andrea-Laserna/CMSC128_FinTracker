@@ -153,7 +153,7 @@ cd CMSC128_FinTracker
 **2. Build the APK**
 
 ```bash
-flutter build apk
+flutter build apk --release
 ```
 
 **3. Locate the APK**
@@ -163,13 +163,15 @@ The APK will be generated at:
 ```
 android/app/build/outputs/apk/release/app-release.apk
 ```
-#### Install on a Physical Device
+**4. Install on physical device**
 
-**A. Manual Installation**
+  - Manual Installation
 
-Transfer the APK through USB, cloud storage, or file-sharing services. Open the APK on the device and allow installation from unknown sources when prompted.
+    Transfer the APK through USB, cloud storage, or file-sharing services. Open the APK on the device and allow installation from unknown sources when prompted.
 
-**B. ADB Installation**
+    OR
+
+  - ADB Installation
 
 ```bash
 adb install build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
@@ -282,190 +284,94 @@ This separation improves maintainability and clearly defines how system componen
 
 # Software Architecture
 
-Fins adopts the **Model–View–ViewModel (MVVM)** architectural pattern.
+Fins follows an **MVC-inspired layered architecture**. There is no dedicated state management library — UI screens in `pages/` handle display, interact directly with the SQLite database layer, and contain most of the business logic. This is a common starting structure for Flutter apps.
 
 | Layer | Implementation | Responsibility |
-|---------|--------------|---------------|
-| **View** | Flutter Widgets | User interface screens and components |
-| **ViewModel** | Presentation Logic | State management and interaction handling |
-| **Model** | Data Classes + SQLite | Data representation and persistence |
+|---|---|---|
+| **Model** | `expense_model.dart` + `db_helper.dart` | Data structures and database operations |
+| **View** | Flutter page widgets in `pages/` | UI screens and user interaction |
+| **Controller** | Logic inside page widgets | Business logic, filtering, and state handling (not yet formally separated) |
 
-## MVVM in Fins
+### Current Limitations
+ 
+- Business logic is mixed into View pages rather than isolated in dedicated controllers
+- No formal state management solution (e.g. Provider, Riverpod, GetX) is currently used
+- Database calls are made directly from page widgets
 
-### View
-
-Responsible for displaying information and capturing user interactions.
-
-Examples:
-
-- Homepage
-- Add Expense Screen
-- Summary Dashboard
-- Settings
-
-### ViewModel
-
-Acts as the bridge between the View and Model.
-
-Responsibilities include:
-
-- State management
-- Data transformation
-- User interaction handling
-- Business process coordination
-
-### Model
-
-Represents the application's core data structures and persistence layer.
-
-Examples:
-
-- Expenses
-- Income Records
-- Financial Summaries
-- SQLite Database
-
-This separation reduces coupling between components and improves maintainability, scalability, and testability.
+### Planned Improvements
+ 
+A future refactor aims to properly separate concerns by introducing dedicated controller and service layers, and adopting a state management solution for cleaner data flow between components.
 
 ---
 
-# Project Structure
-
-## Current Structure
-
-```text
+## Project Structure
+ 
+```
 CMSC128_FinTracker/
+├── android/                            # Android platform code
+├── assets/
+│   ├── fonts/
+│   └── images/
+├── ios/                                # iOS platform code
 ├── lib/
-│   ├── main.dart
-│   │
+│   ├── analytics/                      # Financial insights logic
 │   ├── database/
-│   │   └── db_helper.dart
-│   │
+│   │   └── db_helper.dart              # SQLite database operations
 │   ├── pages/
-│   │   ├── expense_model.dart
-│   │   ├── homepage.dart
-│   │   ├── add_expense.dart
-│   │   ├── summary.dart
-│   │   ├── customizations.dart
-│   │   ├── profile.dart
-│   │   └── landing.dart
-│   │
-│   └── utils/
-│       └── notification_helper.dart
-│
-├── android/
-├── ios/
-├── web/
-├── windows/
+│   │   ├── builders/                   # Widget builders
+│   │   ├── expenses/                   # Expense-related screens
+│   │   ├── summary_helpers/            # Summary calculation helpers
+│   │   ├── summary_widgets/            # Summary UI widgets
+│   │   ├── customizations.dart         # Settings/customization screen
+│   │   ├── edit_page.dart              # Edit expense screen
+│   │   ├── expense_model.dart          # Expense data model
+│   │   ├── finance_insights.dart       # Financial insights screen
+│   │   ├── homepage.dart               # Main dashboard
+│   │   ├── landing.dart                # Landing/splash screen
+│   │   ├── monthly_view.dart           # Monthly view screen
+│   │   ├── settings_page.dart          # Settings screen
+│   │   └── summary.dart                # Summary/reports screen
+│   ├── themes/                         # App theme definitions
+│   └── utils/                          # Utility/helper functions
+│   └── main.dart                       # Entry point
 ├── linux/
 ├── macos/
-└── pubspec.yaml
+├── web/
+├── windows/
+└── pubspec.yaml                        # Package dependencies
 ```
 
-### MVC Layer Mapping (Current)
-
-#### Model — Data & Business Rules
-
+### Layer Mapping
+ 
+**Model** — Data & Persistence
+ 
 | File | Component | Responsibility |
-|------|-----------|---------------|
-| `lib/database/db_helper.dart` | DBHelper | Database initialization and CRUD operations |
-| `lib/pages/expense_model.dart` | Expense Class | Expense data structure and mapping |
-
-#### View — User Interface
-
+|---|---|---|
+| `lib/database/db_helper.dart` | DBHelper | Database initialization, CRUD operations |
+| `lib/pages/expense_model.dart` | Expense class | Expense data structure and mapping |
+ 
+**View** — User Interface
+ 
 | File | Component | Responsibility |
-|------|-----------|---------------|
-| `lib/pages/landing.dart` | LandingPage | Splash / onboarding screen |
+|---|---|---|
+| `lib/pages/landing.dart` | LandingPage | Splash/onboarding screen |
 | `lib/pages/homepage.dart` | HomePage | Main dashboard and expense list |
-| `lib/pages/add_expense.dart` | AddExpensePage | Expense creation and editing |
+| `lib/pages/edit_page.dart` | EditPage | Expense creation and editing |
 | `lib/pages/summary.dart` | SummaryPage | Reports and analytics |
+| `lib/pages/monthly_view.dart` | MonthlyView | Monthly expense view |
+| `lib/pages/finance_insights.dart` | FinanceInsights | Financial insights screen |
 | `lib/pages/customizations.dart` | CustomizationsPage | User preferences and settings |
-| `lib/pages/profile.dart` | ProfilePage | User profile information |
-
-#### Controller — Business Logic
-
+| `lib/pages/settings_page.dart` | SettingsPage | App settings |
+ 
+**Controller** — Business Logic *(mixed into page widgets)*
+ 
 | File | Component | Responsibility |
-|------|-----------|---------------|
-| Scattered throughout `pages/` | Page Widgets | Expense loading, filtering, and state handling |
-| `lib/utils/notification_helper.dart` | NotificationHelper | Notification scheduling |
-
-> **Note:** Business logic is currently distributed across page widgets. A dedicated controller/service layer is planned for future refactoring.
-
----
-
-## Future Structure
-
-```text
-CMSC128_FinTracker/
-├── lib/
-│   ├── main.dart
-│   │
-│   ├── models/
-│   │   ├── expense.dart
-│   │   └── user.dart
-│   │
-│   ├── views/
-│   │   ├── screens/
-│   │   │   ├── landing_screen.dart
-│   │   │   ├── home_screen.dart
-│   │   │   ├── add_expense_screen.dart
-│   │   │   ├── summary_screen.dart
-│   │   │   ├── customizations_screen.dart
-│   │   │   └── profile_screen.dart
-│   │   │
-│   │   └── widgets/
-│   │       ├── expense_item.dart
-│   │       ├── bottom_nav_bar.dart
-│   │       └── expense_form.dart
-│   │
-│   ├── controllers/
-│   │   ├── expense_controller.dart
-│   │   ├── user_controller.dart
-│   │   └── notification_controller.dart
-│   │
-│   ├── services/
-│   │   ├── database_service.dart
-│   │   ├── notification_service.dart
-│   │   └── storage_service.dart
-│   │
-│   └── config/
-│       ├── constants.dart
-│       └── theme.dart
-│
-├── android/
-├── ios/
-├── web/
-├── windows/
-├── linux/
-├── macos/
-└── pubspec.yaml
-```
-
-### Example Flow
-
-**Current Architecture**
-
-```text
-View (HomePage)
- ├── Directly calls DBHelper
- ├── Manages state internally
- └── Performs filtering and calculations
-```
-
-**Planned Architecture**
-
-```text
-View (HomeScreen)
-    ↓
-ExpenseController
-    ↓
-DatabaseService
-    ↓
-Expense Model
-    ↓
-SQLite Database
-```
-
+|---|---|---|
+| `lib/pages/expenses/` | Expense widgets | Expense loading, filtering, state handling |
+| `lib/pages/summary_helpers/` | Summary helpers | Summary calculations |
+| `lib/analytics/` | Analytics logic | Financial insights processing |
+| `lib/utils/` | Utilities | Notification scheduling and helpers |
+ 
 ---
 
 # Authors
